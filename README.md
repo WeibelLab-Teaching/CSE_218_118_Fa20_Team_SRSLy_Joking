@@ -1,1 +1,2 @@
-# CSE_218_118_Fa20_Team_SRSLy_Joking
+# Walk and Talk
+A platform for mobile teleconferencing in AR/VR using WebXR, built on BabylonJs
