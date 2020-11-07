@@ -1,14 +1,15 @@
 class Streamer {
-    constructor(uri, scene) {
+    constructor(uri, scene, resolution=[1920, 1080]) {
         if (uri) {
             // Create a material from the video
             let mat = new BABYLON.StandardMaterial("mat", scene);
             this.texture = new BABYLON.VideoTexture("video", [uri], scene, true, false);
             mat.diffuseTexture = this.texture;
 
-            this.mesh = BABYLON.Mesh.CreatePlane("videoPlane", 8, scene);
-            this.mesh.scaling.x = 1920 / 1080; // set aspect ratio
+            this.mesh = BABYLON.Mesh.CreatePlane("videoPlane", 1, scene);
+            this.mesh.scaling.x = resolution[0] / resolution[1]; // set aspect ratio
             this.mesh.material = mat;
+            this.mesh.position = new BABYLON.Vector3(Math.random(0,1), 1.5, Math.random(0,1));
         }
 
         else {
