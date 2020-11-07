@@ -1,8 +1,4 @@
 class Streamer {
-    mesh;
-    texture;
-    uri;
-
     constructor(uri, scene) {
         if (uri) {
             // Create a material from the video
@@ -86,6 +82,16 @@ class Streamer {
                 }
             });
         }
+        
+        this.mesh.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
+    }
+
+    get position() {
+        return this.mesh.absolutePosition;
+    }
+
+    get rotation() {
+        return this.mesh.absoluteRotationQuaternion;
     }
 
     play() {
