@@ -9,7 +9,7 @@ class Streamer {
             this.mesh = BABYLON.Mesh.CreatePlane("videoPlane", 1, scene);
             this.mesh.scaling.x = resolution[0] / resolution[1]; // set aspect ratio
             this.mesh.material = mat;
-            this.mesh.position = new BABYLON.Vector3(Math.random(0,1), 1.5, Math.random(0,1));
+            this.mesh.position = new BABYLON.Vector3(Math.random(-.5,.5), 2, Math.random(0.5,1));
         }
 
         else {
@@ -84,7 +84,7 @@ class Streamer {
             });
         }
         
-        this.mesh.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
+        this.mesh.billboardMode = BABYLON.Mesh.BILLBOARDMODE_Y;// | BABYLON.Mesh.BILLBOARDMODE_USE_POSITION;
     }
 
     get position() {
