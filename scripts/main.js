@@ -16,12 +16,10 @@ var createScene = function () {
 	// Setup scene
 	var scene = new BABYLON.Scene(engine);
 	
+	// Setup Camera
 	var camera = new BABYLON.ArcRotateCamera("camera", -Math.PI / 2, Math.PI / 4, 1.5, new BABYLON.Vector3(0, 1.5, 0), scene);
 	camera.setTarget(BABYLON.Vector3.Zero());
 	camera.attachControl(canvas, true);
-	var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), scene);
-	light.intensity = 0.7;
-
 
 	// enable VR
 	var vrHelper = scene.createDefaultVRExperience();
@@ -38,6 +36,34 @@ var createScene = function () {
 			});
 		}
 	  });
+
+	// Set Lights
+	var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), scene);
+	light.intensity = 0.7;
+
+	
+	// Set UI Control panel
+	var guiManager = new BABYLON.GUI.GUI3DManager(scene);
+	var guiPanel = new BABYLON.GUI.StackPanel3D();
+	guiPanel.margin = 0.02;
+	guiManager.addControl(guiPanel);
+	guiPanel.linkToTransformNode(scene.activeCamera);
+	guiPanel.node.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
+	guiPanel.position.z = 1;
+	guiPanel.position.y = -0.25;
+	guiPanel.node.rotation = new BABYLON.Vector3(Math.PI/3, 0, 0);
+
+	// add buttons
+	let toggleFollowButton = new BABYLON.GUI.HolographicButton("Follow Button");
+	guiPanel.addControl(toggleFollowButton);
+	toggleFollowButton.onPointerUpObservable.add(onFollowClicked);
+
+	// add text
+	let toggleFollowText = new BABYLON.GUI.TextBlock();
+	toggleFollowText.text = "Toggle Follow";
+	toggleFollowText.color = "white";
+	toggleFollowText.fontSize = 30;
+	toggleFollowButton.content = toggleFollowText;
 
 	return scene;
 };
@@ -68,4 +94,9 @@ window.onload = function() {
 
 	
 	streamer = new Streamer("assets/samplevid.mp4", scene);
+}
+
+function onFollowClicked() {
+	console.log("Follow clicked");
+	streamer.follower.toggle();
 }
