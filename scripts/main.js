@@ -119,24 +119,47 @@ function onEnvironmentClicked() {
 }
 
 function spawnTrees(numberToSpawn=5) {
-	BABYLON.SceneLoader.ImportMesh("", "/assets/", "Tree2.glb", scene, function(meshes) {
-		console.log("Loaded at", meshes.map((m) => {return m.position}));
+	if (!treeMesh) {
+		BABYLON.SceneLoader.ImportMesh("", "/assets/", "Tree2.glb", scene, function(meshes) {
+			console.log("Loaded at", meshes.map((m) => {return m.position}));
 
-		treeMesh = meshes;
-		let pos = new BABYLON.Vector3(Math.random()*4*numberToSpawn-2*numberToSpawn, 0, Math.random()*4*numberToSpawn-2*numberToSpawn);
-		for (mesh of meshes) {
-			mesh.locallyTranslate(pos);
-		}
+			treeMesh = meshes;
+			let pos = new BABYLON.Vector3(Math.random()*4*numberToSpawn-2*numberToSpawn, 0, Math.random()*4*numberToSpawn-2*numberToSpawn);
+			for (mesh of meshes) {
+				mesh.locallyTranslate(pos);
+			}
+			
+			// spawn a bunch of trees
+			for (let i=1; i<numberToSpawn; i++) { // start at 1 to account for first tree
+				pos = new BABYLON.Vector3(Math.random()*4*numberToSpawn-2*numberToSpawn, 0, Math.random()*4*numberToSpawn-2*numberToSpawn);
+
+				for (let j=0; j<meshes.length; j++) {
+					let instance = meshes[j].createInstance(`Tree${i}_part${j}`);
+					instance.locallyTranslate(pos);
+				}
+				console.log(`Spawned Tree${i} at (${pos.x}, ${pos.y}, ${pos.z})`);
+			}
+		});
+
 		
+
+		// Set Ground texture
+		let groundMaterial = new BABYLON.StandardMaterial("groundMat", scene);
+		groundMaterial.diffuseTexture = new BABYLON.Texture("/assets/ground/Color.jpg", scene);
+		scene.getMeshesByID("ground")[0].material = groundMaterial;
+	}
+	else {
 		// spawn a bunch of trees
-		for (let i=1; i<numberToSpawn; i++) {
+		let pos;
+
+		for (let i=0; i<numberToSpawn; i++) {
 			pos = new BABYLON.Vector3(Math.random()*4*numberToSpawn-2*numberToSpawn, 0, Math.random()*4*numberToSpawn-2*numberToSpawn);
 
-			for (let j=0; j<meshes.length; j++) {
-				let instance = meshes[j].createInstance(`Tree${i}_part${j}`);
+			for (let j=0; j<treeMesh.length; j++) {
+				let instance = treeMesh[j].createInstance(`Tree${i}_part${j}`);
 				instance.locallyTranslate(pos);
 			}
 			console.log(`Spawned Tree${i} at (${pos.x}, ${pos.y}, ${pos.z})`);
 		}
-	})
+	}
 }
