@@ -5,6 +5,7 @@ var scene = undefined;
 var xr = undefined;
 var streamer = undefined;
 var treeMesh = undefined;
+var playArea = [[1, 0, 1], [1, 0, -1], [-1, 0, -1], [-1, 0, 1]]; // TODO: let user set this
 
 var createDefaultEngine = function () {
 	return new BABYLON.Engine(canvas, true, {
@@ -118,7 +119,32 @@ function onEnvironmentClicked() {
 	
 }
 
-function spawnTrees(numberToSpawn=5) {
+/**
+ * To improve performance, 1 tree model is loaded, 
+ * all other 'spawned' trees are instances of the first.
+ * @param {int} numberToSpawn The number of trees to spawn
+ */
+function spawnTrees(numberToSpawn=15) {
+	function spawn(numberToSpawn) {
+		// spawn a bunch of trees
+		let pos;
+
+		for (let i=0; i<numberToSpawn; i++) {
+			pos = new BABYLON.Vector3(Math.random()*4*numberToSpawn-2*numberToSpawn, 0, Math.random()*4*numberToSpawn-2*numberToSpawn);
+			while (isInPlayArea(pos.asArray())) {
+				console.log(`position (${pos.x}, ${pos.y}, ${pos.z}) is in play area`);
+				pos = new BABYLON.Vector3(Math.random()*4*numberToSpawn-2*numberToSpawn, 0, Math.random()*4*numberToSpawn-2*numberToSpawn);
+			}
+
+			for (let j=0; j<treeMesh.length; j++) {
+				let instance = treeMesh[j].createInstance(`Tree${i}_part${j}`);
+				instance.locallyTranslate(pos);
+			}
+			//console.log(`Spawned Tree${i} at (${pos.x}, ${pos.y}, ${pos.z})`);
+		}
+	}
+
+
 	if (!treeMesh) {
 		BABYLON.SceneLoader.ImportMesh("", "/assets/", "Tree2.glb", scene, function(meshes) {
 			console.log("Loaded at", meshes.map((m) => {return m.position}));
@@ -128,20 +154,8 @@ function spawnTrees(numberToSpawn=5) {
 			for (mesh of meshes) {
 				mesh.locallyTranslate(pos);
 			}
-			
-			// spawn a bunch of trees
-			for (let i=1; i<numberToSpawn; i++) { // start at 1 to account for first tree
-				pos = new BABYLON.Vector3(Math.random()*4*numberToSpawn-2*numberToSpawn, 0, Math.random()*4*numberToSpawn-2*numberToSpawn);
-
-				for (let j=0; j<meshes.length; j++) {
-					let instance = meshes[j].createInstance(`Tree${i}_part${j}`);
-					instance.locallyTranslate(pos);
-				}
-				console.log(`Spawned Tree${i} at (${pos.x}, ${pos.y}, ${pos.z})`);
-			}
+			spawn(numberToSpawn-1) // -1 because we just made one by importing the mesh
 		});
-
-		
 
 		// Set Ground texture
 		let groundMaterial = new BABYLON.StandardMaterial("groundMat", scene);
@@ -149,17 +163,29 @@ function spawnTrees(numberToSpawn=5) {
 		scene.getMeshesByID("ground")[0].material = groundMaterial;
 	}
 	else {
-		// spawn a bunch of trees
-		let pos;
-
-		for (let i=0; i<numberToSpawn; i++) {
-			pos = new BABYLON.Vector3(Math.random()*4*numberToSpawn-2*numberToSpawn, 0, Math.random()*4*numberToSpawn-2*numberToSpawn);
-
-			for (let j=0; j<treeMesh.length; j++) {
-				let instance = treeMesh[j].createInstance(`Tree${i}_part${j}`);
-				instance.locallyTranslate(pos);
-			}
-			console.log(`Spawned Tree${i} at (${pos.x}, ${pos.y}, ${pos.z})`);
-		}
+		spawn(numberToSpawn);
 	}
+}
+
+/**
+ * checks if a point is in the play area
+ * Algorithm copied from https://github.com/substack/point-in-polygon/blob/master/index.js
+ * @param {array} point the point to check as an array [x, y, z] eg: [1, 2, 3]
+ */
+function isInPlayArea(point) {
+
+	let inside = false;
+	for (let i=0, j=playArea.length-1; i<playArea.length; j = i++) {
+		let xi = playArea[i][0];
+		let zi = playArea[i][2];
+
+		let xj = playArea[j][0];
+		let zj = playArea[j][2];
+
+		let intersect = ((zi > point[2]) != (zj > point[2])) && 
+						(point[0] < (xj - xi) * (point[2]-zi) / (zj - zi) + xi);
+		if (intersect) inside = !inside;
+	}
+
+	return inside;
 }
