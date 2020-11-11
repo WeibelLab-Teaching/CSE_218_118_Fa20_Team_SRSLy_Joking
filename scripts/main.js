@@ -20,11 +20,12 @@ async function createScene(callback) {
 
 	// Set Ground Plane
 	let ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 40, height: 40, subdivisions: 4}, scene);
-	// ground.translate(new BABYLON.Vector3(-20, 0, -20))
+	// give ambient light coming up from ground
+	let ambientlight = new BABYLON.HemisphericLight("light0", new BABYLON.Vector3(0, 1, 0), scene);
 
-	// Set Lights
-	let light = new BABYLON.PointLight("light1", new BABYLON.Vector3(0, 10, 0), scene);
-	light.intensity = 30;
+	// Set Sun
+	let light = new BABYLON.DirectionalLight("light1", new BABYLON.Vector3(0, -1, 0), scene);
+	//light.intensity = 30;
 
 	
 	// Set UI Control panel
@@ -118,7 +119,7 @@ function onEnvironmentClicked() {
 }
 
 function spawnTrees(numberToSpawn=5) {
-	BABYLON.SceneLoader.ImportMesh("", "/assets/", "Tree1.glb", scene, function(meshes) {
+	BABYLON.SceneLoader.ImportMesh("", "/assets/", "Tree2.glb", scene, function(meshes) {
 		console.log("Loaded at", meshes.map((m) => {return m.position}));
 
 		treeMesh = meshes;
