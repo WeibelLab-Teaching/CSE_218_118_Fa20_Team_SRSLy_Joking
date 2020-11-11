@@ -13,7 +13,7 @@ class Streamer {
             this.mesh.scaling.x = this.mesh.scaling.y * resolution[0] / resolution[1]; // set aspect ratio
             this.mesh.material = mat;
             this.mesh.position = pos;
-            this.light = BABYLON.PointLight(name+"PlaneLight", pos.add(new BABYLON.Vector3(0, 0, .2)), scene);
+            this.light = new BABYLON.PointLight(name+"PlaneLight", pos.add(new BABYLON.Vector3(0, 0, .2)), scene);
             this.light.parent = this.mesh;
         }
 
