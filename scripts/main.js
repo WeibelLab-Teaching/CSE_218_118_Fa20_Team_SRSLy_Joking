@@ -38,12 +38,22 @@ async function createScene(callback) {
 	guiPanel.addControl(toggleFollowButton);
 	toggleFollowButton.onPointerUpObservable.add(onFollowClicked);
 
+	let toggleEnvironmentButton = new BABYLON.GUI.HolographicButton("Environment Button");
+	guiPanel.addControl(toggleEnvironmentButton);
+	toggleEnvironmentButton.onPointerUpObservable.add(onEnvironmentClicked);
+
 	// add text
 	let toggleFollowText = new BABYLON.GUI.TextBlock();
 	toggleFollowText.text = "Toggle Follow";
 	toggleFollowText.color = "white";
 	toggleFollowText.fontSize = 30;
 	toggleFollowButton.content = toggleFollowText;
+
+	let envText = new BABYLON.GUI.TextBlock();
+	envText.text = "Change Environment";
+	envText.color = "white";
+	envText.fontSize = 30;
+	toggleEnvironmentButton.content = envText;
 
 	if (callback) {
 		callback(scene);
@@ -80,4 +90,8 @@ window.onload = function() {
 function onFollowClicked() {
 	console.log("Follow clicked");
 	streamer.follower.toggle();
+}
+
+function onEnvironmentClicked() {
+	console.log("Change Environment");
 }
