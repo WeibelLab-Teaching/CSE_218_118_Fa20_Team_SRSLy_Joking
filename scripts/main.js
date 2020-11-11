@@ -1,10 +1,9 @@
 var canvas = document.getElementById("renderCanvas");
 
-var engine = null;
-var scene = null;
-var sceneToRender = null;
-var streamer = null;
-var inputController = null;
+var engine = undefined;
+var scene = undefined;
+var xr = undefined;
+var streamer = undefined;
 
 var createDefaultEngine = function () {
 	return new BABYLON.Engine(canvas, true, {
@@ -15,36 +14,8 @@ var createDefaultEngine = function () {
 
 async function createScene(callback) {
 	// Setup scene
-	var scene = new BABYLON.Scene(engine);
-	var xr = await scene.createDefaultXRExperienceAsync();
-	if (!xr.baseExperience) {
-		console.warn("No XR Support");
-	}
-	else {
-		console.log("Using XR");
-	}
-	// Setup Camera
-	// var camera = new BABYLON.ArcRotateCamera("camera", -Math.PI / 2, Math.PI / 4, 1.5, new BABYLON.Vector3(0, 1.5, 0), scene);
-	// camera.setTarget(BABYLON.Vector3.Zero());
-	// camera.attachControl(canvas, true);
-
-	// enable VR
-	// var vrHelper = scene.createDefaultVRExperience();
-	// vrHelper.onAfterEnteringVRObservable.add(() => {
-	// 	if (scene.activeCamera === vrHelper.vrDeviceOrientationCamera) {
-	// 	  BABYLON.FreeCameraDeviceOrientationInput.WaitForOrientationChangeAsync(1000)
-	// 		.then(() => {
-	// 		  // Successfully received sensor input
-	// 		})
-	// 		.catch(() => {
-	// 		  alert(
-	// 			"Device orientation camera is being used but no sensor is found, prompt user to enable in safari settings"
-	// 		  );
-	// 		});
-	// 	}
-	//   });
-
-	
+	scene = new BABYLON.Scene(engine);
+	xr = await scene.createDefaultXRExperienceAsync();
 
 	// Set Lights
 	var light = new BABYLON.PointLight("light1", new BABYLON.Vector3(0, 1, 0), scene);
@@ -74,23 +45,6 @@ async function createScene(callback) {
 	toggleFollowText.fontSize = 30;
 	toggleFollowButton.content = toggleFollowText;
 
-	// Get Controls
-	// inputController = new InputController(vrHelper, "quest");
-	// inputController.pressed.add(function() {
-	// 	light = scene.lights[0];
-
-	// 	console.log("Click event", light.diffuse);
-	// 	if (light.diffuse.g === 1) {
-	// 		console.log("Setting red");
-	// 		light.diffuse = new BABYLON.Color3(1, 0, 0);
-	// 	}
-	// 	else {
-	// 		console.log("Setting white");
-	// 		light.diffuse = new BABYLON.Color3(1, 1, 1);
-	// 	}
-	// 	streamer.follower.toggle();
-	// })
-
 	if (callback) {
 		callback(scene);
 	}
@@ -118,8 +72,8 @@ window.onload = function() {
 			engine.resize();
 		});
 
-		
-		streamer = new Streamer("assets/samplevid.mp4", scene);
+		// TODO: Insert code to create streamers and connect to server
+		streamer = new Streamer("assets/samplevid.mp4", scene); // TEMP: play a video for now
 	});
 }
 

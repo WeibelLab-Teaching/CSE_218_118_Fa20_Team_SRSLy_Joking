@@ -11,9 +11,8 @@ class Follower {
     }
 
     follow() {
-        self = arguments[0];
-        self.mesh.position.x = self.target.position.x + self.initialOffset.x;
-        self.mesh.position.z = self.target.position.z + self.initialOffset.z;
+        this.mesh.position.x = this.target.position.x + this.initialOffset.x;
+        this.mesh.position.z = this.target.position.z + this.initialOffset.z;
         // TODO: add smoothing
     }
 
@@ -28,11 +27,13 @@ class Follower {
         }
 
         if (this.isFollowing) {
-            this.mesh._scene.unregisterBeforeRender(() => {this.follow(this)});
+            this.mesh._scene.unregisterBeforeRender(this._followingCallback);
             this.isFollowing = false;
+            this._followingCallback = null;
         }
         else {
-            this.mesh._scene.registerBeforeRender(() => {this.follow(this)});
+            this._followingCallback = this.follow.bind(this);
+            this.mesh._scene.registerBeforeRender(this._followingCallback);
             this.isFollowing = true;
         }
     }
