@@ -18,9 +18,13 @@ async function createScene(callback) {
 	scene = new BABYLON.Scene(engine);
 	xr = await scene.createDefaultXRExperienceAsync();
 
+	// Set Ground Plane
+	let ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 40, height: 40, subdivisions: 4}, scene);
+	// ground.translate(new BABYLON.Vector3(-20, 0, -20))
+
 	// Set Lights
-	var light = new BABYLON.PointLight("light1", new BABYLON.Vector3(0, 1, 0), scene);
-	light.intensity = 0.7;
+	let light = new BABYLON.PointLight("light1", new BABYLON.Vector3(0, 10, 0), scene);
+	light.intensity = 30;
 
 	
 	// Set UI Control panel
@@ -66,6 +70,7 @@ async function createScene(callback) {
 	playText.text = "Play Debug";
 	playText.color = "white";
 	playText.fontSize = 30;
+	playButton.content = playText;
 
 	if (callback) {
 		callback(scene);
@@ -96,15 +101,6 @@ window.onload = function() {
 
 		// TODO: Insert code to create streamers and connect to server
 		streamer = new Streamer("assets/samplevid.mp4", scene); // TEMP: play a video for now
-
-		// Get Click Events
-		// window.addEventListener("click", function () {
-		// 	let pickResult = scene.pick(scene.pointerX, scene.pointerY);
-		// 	console.log(pickResult);
-		// 	if (pickResult.hit && pickResult.pickedMesh.uniqueId === streamer.mesh.uniqueId) {
-		// 		streamer.play();
-		// 	}
-		// });
 	});
 }
 
