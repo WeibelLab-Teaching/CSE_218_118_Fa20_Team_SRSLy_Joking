@@ -1,18 +1,15 @@
 class Streamer {
-    mesh;
-    texture;
-    uri;
-
-    constructor(uri, scene) {
+    constructor(uri, scene, resolution=[1920, 1080]) {
         if (uri) {
             // Create a material from the video
             let mat = new BABYLON.StandardMaterial("mat", scene);
             this.texture = new BABYLON.VideoTexture("video", [uri], scene, true, false);
             mat.diffuseTexture = this.texture;
 
-            this.mesh = BABYLON.Mesh.CreatePlane("videoPlane", 8, scene);
-            this.mesh.scaling.x = 1920 / 1080; // set aspect ratio
+            this.mesh = BABYLON.Mesh.CreatePlane("videoPlane", 1, scene);
+            this.mesh.scaling.x = resolution[0] / resolution[1]; // set aspect ratio
             this.mesh.material = mat;
+            this.mesh.position = new BABYLON.Vector3(Math.random(-.5,.5), 2, Math.random(0.5,1));
         }
 
         else {
@@ -86,6 +83,16 @@ class Streamer {
                 }
             });
         }
+        
+        this.mesh.billboardMode = BABYLON.Mesh.BILLBOARDMODE_Y;// | BABYLON.Mesh.BILLBOARDMODE_USE_POSITION;
+    }
+
+    get position() {
+        return this.mesh.absolutePosition;
+    }
+
+    get rotation() {
+        return this.mesh.absoluteRotationQuaternion;
     }
 
     play() {

@@ -16,14 +16,12 @@ var createScene = function () {
 	// Setup scene
 	var scene = new BABYLON.Scene(engine);
 	
-	var camera = new BABYLON.ArcRotateCamera("camera", -Math.PI / 2, Math.PI / 4, 3, new BABYLON.Vector3(0, 3, 0), scene);
-	// var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
+	var camera = new BABYLON.ArcRotateCamera("camera", -Math.PI / 2, Math.PI / 4, 1.5, new BABYLON.Vector3(0, 1.5, 0), scene);
 	camera.setTarget(BABYLON.Vector3.Zero());
 	camera.attachControl(canvas, true);
 	var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), scene);
 	light.intensity = 0.7;
 
-	streamer = new Streamer("assets/samplevid.mp4", scene);
 
 	// enable VR
 	var vrHelper = scene.createDefaultVRExperience();
@@ -54,7 +52,7 @@ window.onload = function() {
 		engine = createDefaultEngine();
 	}
 	if (!engine) throw 'engine should not be null.';
-	scene = createScene();;
+	scene = createScene();
 	sceneToRender = scene
 	
 	engine.runRenderLoop(function () {
@@ -67,4 +65,7 @@ window.onload = function() {
 	window.addEventListener("resize", function () {
 		engine.resize();
 	});
+
+	
+	streamer = new Streamer("assets/samplevid.mp4", scene);
 }
