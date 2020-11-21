@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+    
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+        <title>Babylon.js sample code</title>
+
+        <!-- Babylon.js -->
+        <script src="https://code.jquery.com/pep/0.4.2/pep.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.2/dat.gui.min.js"></script>
+    <script src="https://preview.babylonjs.com/ammo.js"></script>
+    <script src="https://preview.babylonjs.com/cannon.js"></script>
+    <script src="https://preview.babylonjs.com/Oimo.js"></script>
+    <script src="https://preview.babylonjs.com/earcut.min.js"></script>
+    <script src="https://preview.babylonjs.com/babylon.js"></script>
+    <script src="https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
+    <script src="https://preview.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js"></script>
+    <script src="https://preview.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.min.js"></script>
+    <script src="https://preview.babylonjs.com/loaders/babylonjs.loaders.js"></script>
+    <script src="https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js"></script>
+    <script src="https://preview.babylonjs.com/gui/babylon.gui.min.js"></script>
+    <script src="https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js"></script>
+
+        <script src="js/Streamer.js"></script>
+        <script src="js/Follower.js"></script>
+
+        <!-- webrtc scripts-->
+        <script src="socket.io/socket.io.js"></script>
+        <script src="js/modules/mediasoupclient.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/EventEmitter/5.2.8/EventEmitter.min.js"></script>
+        <script src="js/RoomClient.js"></script>
+    
+        <style>
+            html, body {
+                overflow: hidden;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            #renderCanvas {
+                width: 100%;
+                height: 100%;
+                touch-action: none;
+            }
+
+
+
+            
+            .containers {
+                display: grid;
+                grid-gap: 5px;
+                grid-template-columns: repeat(auto-fit, 1fr);
+                grid-template-rows: repeat(auto-fit, 300px);
+            }
+
+            .container {
+                display: flex;
+            }
+
+            .vid {
+                flex: 0 1 auto;
+                height: 400px;
+            }
+
+            .settings {
+                background-color: #4CAF50;
+                border: none;
+                color: white;
+                padding: 5px 10px;
+                text-align: center;
+                text-decoration: none;
+                display: inline-block;
+                font-size: 14px;
+                margin: 2px 2px;
+                cursor: pointer;
+            }
+
+            .hidden {
+                display: none
+            }
+
+        </style>
+    </head>
+<body onload="createScene()">
+
+    <div id="login">
+        Room:   <input id="roomidInput" value="123" type="text" />
+        <!--<button id="createRoom" onclick="createRoom(roomid.value)" label="createRoom">Create Room</button>-->
+        <br />
+        User: <input id='nameInput' value="bob" type="text" />
+        <button id='joinButton' onclick="joinRoom(nameInput.value, roomidInput.value)">Join</button>
+    </div>
+    <div id="control" class="hidden">
+        <button id='exitButton' class='hidden' onclick="rc.exit()">Exit</button>
+        <br/>
+        audio: <select id="audioSelect">
+        </select>
+        <br/>
+        video: <select id="videoSelect">
+        </select>
+        <br />
+        <button id='startAudioButton' class='hidden' onclick="rc.produce(RoomClient.mediaType.audio, audioSelect.value)">audio</button>
+        <button id='stopAudioButton' class='hidden' onclick="rc.closeProducer(RoomClient.mediaType.audio)">close
+            audio</button>
+        <button id='startVideoButton' class='hidden' onclick="rc.produce(RoomClient.mediaType.video, videoSelect.value)">video</button>
+        <button id='stopVideoButton' class='hidden' onclick="rc.closeProducer(RoomClient.mediaType.video)">close
+            video</button>
+        <button id='startScreenButton' class='hidden' onclick="rc.produce(RoomClient.mediaType.screen)">screen</button>
+        <button id='stopScreenButton' class='hidden' onclick="rc.closeProducer(RoomClient.mediaType.screen)">close
+            screen</button>
+        <br />
+    </div>
+    
+
+
+    <div id='videoMedia' class='hidden'>
+        <h2>------local------</h2>
+        <div id="localMedia"></div>
+        <!--<video id="localVideo" autoplay inline class="vid"></video>-->
+        <!--<video id="localScreen" autoplay inline class="vid"></video>-->
+        <h2>-----remote-----</h2>
+        <div id="remoteVideos" class="container">
+        </div>
+
+        <div id="remoteAudios"></div>
+
+    </div>
+    <canvas id="renderCanvas"></canvas>
+    <video style="display:none"></video>
+    <script src="js/webrtc.js"></script>
+</body>
+<footer>
+    <script src="js/index.js"></script>
+</footer>
+</html>

@@ -13,8 +13,14 @@ app.get('/', (req, res) => {
 
 // WebRTC testing
 app.get('/webrtc', (req, res) => {
-    res.sendFile(__dirname+"/pages/index.html");
-    console.log("sent index.html");
+    res.sendFile(__dirname+"/pages/webrtc.html");
+    console.log("sent webrtc.html");
+})
+
+// WebRTC nonVR testing
+app.get('/webrtc_nonvr', (req, res) => {
+    res.sendFile(__dirname+"/pages/webrtc_nonvr.html");
+    console.log("sent webrtc_nonvr.html");
 })
 
 app.use("/js", express.static(__dirname+'/scripts/'));
@@ -64,7 +70,7 @@ httpsServer.listen(3000, (err) => {
 
 const io = require('socket.io')(httpsServer)
 const mediasoup = require('mediasoup')
-const config = require('./config')
+const config = require('./webrtc_server_scripts/config')
 
 
 // Begin worker methods
@@ -128,10 +134,10 @@ function getMediasoupWorker() {
 // Begin room list and initializations
 
 // Each Room is a meeting
-const Room = require('./Room')
+const Room = require('./webrtc_server_scripts/Room')
 
 // Each peer is a user
-const Peer = require('./Peer')
+const Peer = require('./webrtc_server_scripts/Peer')
 /**
  * roomList
  * {
