@@ -1,3 +1,7 @@
+/* Most of the code here is from https://github.com/Dirvann/mediasoup-sfu-webrtc-video-rooms to implement
+ * webrtc features.
+ */
+
 if (location.href.substr(0, 5) !== 'https')
   location.href = 'https' + location.href.substr(4, location.href.length - 4)
 

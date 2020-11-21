@@ -1,3 +1,8 @@
+/* WebRTC/mediasoup code from https://github.com/Dirvann/mediasoup-sfu-webrtc-video-rooms to implement
+ * webrtc features.
+ */
+
+
 var canvas = document.getElementById("renderCanvas");
 
 var engine = undefined;
