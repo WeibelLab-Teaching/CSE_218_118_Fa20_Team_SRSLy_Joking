@@ -6,6 +6,9 @@ var xr = undefined;
 var streamer = undefined;
 var treeMesh = undefined;
 
+// webRTCStreamer: the stream of other peers
+var webRTCStreamer = undefined;
+
 var createDefaultEngine = function () {
 	return new BABYLON.Engine(canvas, true, {
 		preserveDrawingBuffer: true,
@@ -52,6 +55,10 @@ async function createScene(callback) {
 	let playButton = new BABYLON.GUI.HolographicButton("Play Button");
 	guiPanel.addControl(playButton);
 	playButton.onPointerUpObservable.add(() => {streamer.play()});
+	// connect to meeting button
+	let joinButton = new BABYLON.GUI.HolographicButton("Join Button");
+	guiPanel.addControl(joinButton);
+	joinButton.onPointerUpObservable.add(onMeetingJoin);
 
 	//// add text
 	// follow
@@ -72,6 +79,13 @@ async function createScene(callback) {
 	playText.color = "white";
 	playText.fontSize = 30;
 	playButton.content = playText;
+	// connect to meeting button
+	let connectText = new BABYLON.GUI.TextBlock();
+	connectText.text = "Join Meeting";
+	connectText.color = "white";
+	connectText.fontSize = 30;
+	playButton.content = connectText;
+
 
 	if (callback) {
 		callback(scene);
@@ -162,4 +176,11 @@ function spawnTrees(numberToSpawn=5) {
 			console.log(`Spawned Tree${i} at (${pos.x}, ${pos.y}, ${pos.z})`);
 		}
 	}
+}
+
+/* Should join a meeting */
+function onMeetingJoin(roomid=1) {
+	//TODO do something with roomid, for now it's just room #1.
+	console.log("(Not Implemented) Join Meeting Room #" + roomid);
+	
 }
