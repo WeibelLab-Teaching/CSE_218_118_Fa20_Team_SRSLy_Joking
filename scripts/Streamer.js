@@ -88,8 +88,6 @@ class Streamer {
                 }
             });
         }
-        
-        this.mesh.billboardMode = BABYLON.Mesh.BILLBOARDMODE_Y;// | BABYLON.Mesh.BILLBOARDMODE_USE_POSITION;
         this.follower = new Follower(this.mesh, scene.activeCamera);
     }
 

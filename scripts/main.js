@@ -3,9 +3,11 @@ var canvas = document.getElementById("renderCanvas");
 var engine = undefined;
 var scene = undefined;
 var xr = undefined;
+var xrHelper = undefined;
 var streamer = undefined;
 var treeMesh = undefined;
 var playArea = [[1, 0, 1], [1, 0, -1], [-1, 0, -1], [-1, 0, 1]]; // TODO: let user set this
+var streamers = []
 
 var createDefaultEngine = function () {
 	return new BABYLON.Engine(canvas, true, {
@@ -18,9 +20,22 @@ async function createScene(callback) {
 	// Setup scene
 	scene = new BABYLON.Scene(engine);
 	xr = await scene.createDefaultXRExperienceAsync();
+	xrHelper = new BABYLON.VRExperienceHelper(scene)
+	
+	// Set cursor options
+	if (true || 'no controllers exist / is phone VR') {
+		
+		xrHelper.setLaserColor(new BABYLON.Color3(1,0,0));
+		xrHelper.setGazeColor(new BABYLON.Color3(0, 1, 0));
+		xrHelper.enableInteractions()
+	}
 
 	// Set Ground Plane
 	let ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 40, height: 40, subdivisions: 4}, scene);
+	// BABYLON.VRExperienceHelper.addFloorMesh(ground)
+	xrHelper.enableTeleportation({
+		floorMeshName: "ground"
+	});
 	// give ambient light coming up from ground
 	let ambientlight = new BABYLON.HemisphericLight("light0", new BABYLON.Vector3(0, 1, 0), scene);
 
@@ -74,6 +89,39 @@ async function createScene(callback) {
 	playText.fontSize = 30;
 	playButton.content = playText;
 
+
+
+	// TEMP: Add a button for testing
+	var testPanel = new BABYLON.GUI.StackPanel3D();
+	testPanel.margin = 0.02;
+	guiManager.addControl(testPanel);
+	testPanel.node.scaling = new BABYLON.Vector3(0.5, 0.5, 0.5);
+	testPanel.position.z = 1;
+	testPanel.position.y = 1;
+	testPanel.node.rotation = new BABYLON.Vector3(Math.PI/3, 0, 0);
+
+	let testButton = new BABYLON.GUI.HolographicButton("Test Button");
+	testPanel.addControl(testButton);
+	testButton.onPointerUpObservable.add(() => {
+		let advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+		let text = new BABYLON.GUI.TextBlock();
+		text.text = "Clicked";
+		text.color = "black";
+		text.fontSize = 40;
+		advancedTexture.addControl(text);
+		setTimeout(() => {
+			advancedTexture.dispose()
+		}, 2000)
+	});
+
+	//// add text
+	// follow
+	let testButtonText = new BABYLON.GUI.TextBlock();
+	testButtonText.text = "Test Button";
+	testButtonText.color = "white";
+	testButtonText.fontSize = 30;
+	testButton.content = testButtonText;
+
 	if (callback) {
 		callback(scene);
 	}
@@ -101,9 +149,22 @@ window.onload = function() {
 			engine.resize();
 		});
 
-		// TODO: Insert code to create streamers and connect to server
-		streamer = new Streamer("assets/samplevid.mp4", scene); // TEMP: play a video for now
+		addStreamer()
+
+		// Billboard
+		scene.onBeforeRenderObservable.add(function() {
+			for (streamer of streamers) {
+				streamer.mesh.lookAt(scene.activeCamera.position, Math.PI);
+			}
+		})
 	});
+}
+
+function addStreamer() {
+	// TODO: Insert code to create streamers and connect to server
+	streamer = new Streamer("assets/samplevid.mp4", scene); // TEMP: play a video for now
+	streamers.push(streamer)
+
 }
 
 function onFollowClicked() {
