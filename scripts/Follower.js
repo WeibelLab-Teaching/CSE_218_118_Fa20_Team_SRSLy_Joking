@@ -37,4 +37,31 @@ class Follower {
             this.isFollowing = true;
         }
     }
+
+    enable(updateOffset=false) {
+        // Set offset if needed
+        if (!this.initialOffset || updateOffset) {
+            this.setOffset();
+        }
+
+        if (this.isFollowing) {
+            return;
+        }
+        else {
+            this._followingCallback = this.follow.bind(this);
+            this.mesh._scene.registerBeforeRender(this._followingCallback);
+            this.isFollowing = true;
+        }
+    }
+
+    disable() {
+        if (this.isFollowing) {
+            this.mesh._scene.unregisterBeforeRender(this._followingCallback);
+            this.isFollowing = false;
+            this._followingCallback = null;
+        }
+        else {
+            return;
+        }
+    }
 }

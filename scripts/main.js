@@ -4,10 +4,19 @@ var engine = undefined;
 var scene = undefined;
 var xr = undefined;
 var xrHelper = undefined;
-var streamer = undefined;
 var treeMesh = undefined;
-var playArea = [[1, 0, 1], [1, 0, -1], [-1, 0, -1], [-1, 0, 1]]; // TODO: let user set this
-var streamers = []
+
+
+/**
+ * Add features to the ApplicationState variable as you desire
+ * This will help us with saving and loading later.
+ * So, if there is anything you might want saved, add and control it here.
+ */
+var ApplicationState = {
+	"following": false,
+	"streamers": [],
+	"play_area": [[1, 0, 1], [1, 0, -1], [-1, 0, -1], [-1, 0, 1]]
+}
 
 var createDefaultEngine = function () {
 	return new BABYLON.Engine(canvas, true, {
@@ -149,38 +158,71 @@ window.onload = function() {
 			engine.resize();
 		});
 
-		addStreamer()
+		addStreamer("assets/samplevid.mp4")
 
 		// Billboard
 		scene.onBeforeRenderObservable.add(function() {
-			for (streamer of streamers) {
+			for (streamer of ApplicationState.streamers) {
 				streamer.mesh.lookAt(scene.activeCamera.position, Math.PI);
 			}
 		})
 	});
 }
 
-function addStreamer() {
-	// TODO: Insert code to create streamers and connect to server
-	streamer = new Streamer("assets/samplevid.mp4", scene); // TEMP: play a video for now
-	streamers.push(streamer)
+/**
+ * Adds a video stream to the scene
+ * TODO: connect to WebRTC @eric
+ * @param {string} uri the path to the video to stream (eg: assets/samplevid.mp4 or https://path.to.webrtc/uuid)
+ */
+function addStreamer(uri) {
+	// Create <video> tag in html
+	// TODO: hook up <video> tag to WebRTC
+	let streamsContainer = document.getElementById("streams");
+	let video = document.createElement("video");
+	video.setAttribute("src", uri);
+	streamsContainer.appendChild(video);
 
+	// Add to app state
+	let streamer = new Streamer(video, scene);
+	ApplicationState.streamers.push(streamer);
+
+	// Set to follow
+	if (ApplicationState.following) {
+		streamer.follower.enable();
+	}
 }
 
+/**
+ * Toggles on and off the following behavior
+ */
 function onFollowClicked() {
-	console.log("Follow clicked");
-	streamer.follower.toggle();
+	ApplicationState.following = !ApplicationState.following;
+
+	if (ApplicationState.following) {
+		for (streamer of ApplicationState.streamers) {
+			streamer.follower.enable();
+		}
+	}
+	else {
+		for (streamer of ApplicationState.streamers) {
+			streamer.follower.disable();
+		}
+	}
 }
 
+/**
+ * Behavior to invoke when the environment button is clicked
+ * TODO: show a series of options: AR, Forest, Office, etc.
+ */
 function onEnvironmentClicked() {
 	console.log("Change Environment");
 
 	// TEMP: randomly spawn trees
 	spawnTrees();
-	
 }
 
 /**
+ * Spawns trees into the scene and sets the ground plane texture
  * To improve performance, 1 tree model is loaded, 
  * all other 'spawned' trees are instances of the first.
  * @param {int} numberToSpawn The number of trees to spawn
