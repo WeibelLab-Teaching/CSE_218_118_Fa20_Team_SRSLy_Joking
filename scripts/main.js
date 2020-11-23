@@ -5,7 +5,7 @@ var scene = undefined;
 var xr = undefined;
 var xrHelper = undefined;
 var treeMesh = undefined;
-
+var p = undefined;
 
 /**
  * Add features to the ApplicationState variable as you desire
@@ -158,6 +158,8 @@ window.onload = function() {
 			engine.resize();
 		});
 
+
+		// Setup Streamers
 		addStreamer("assets/samplevid.mp4")
 
 		// Billboard
@@ -165,6 +167,15 @@ window.onload = function() {
 			for (streamer of ApplicationState.streamers) {
 				streamer.mesh.lookAt(scene.activeCamera.position, Math.PI);
 			}
+		})
+
+		// Setup Momentum Tracking
+		p = new Momentum(scene.activeCamera);
+		scene.onBeforeRenderObservable.add(function() {
+			p.recordPose();
+			let velocity = p.calculateTrend().subset(math.index(math.range(0, 3), 3)).toArray();
+			console.log(velocity);
+			// TODO: apply velocity to streamers
 		})
 	});
 }
