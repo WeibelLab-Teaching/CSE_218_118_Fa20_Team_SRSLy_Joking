@@ -29,7 +29,7 @@ class Streamer {
         }.bind(this));
 
         // Setup mesh for following
-        this.follower = new Follower(this.mesh, scene.activeCamera);
+        this.follower = new Follower(this.mesh, p /*scene.activeCamera*/);
     }
 
     get position() {

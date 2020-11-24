@@ -1,6 +1,13 @@
 class Momentum {
 
     /**
+     * Object for monitoring an object's movements.
+     * You must implement the update loop. eg:
+     * 
+     * p = new Momentum(scene.activeCamera);
+     * scene.onBeforeRenderObservable.add(function() {
+     *      p.recordPose();
+     * })
      * 
      * @param objectToTrack The object that you want to track
      */
@@ -10,6 +17,9 @@ class Momentum {
         this.pose = null;
     }
 
+    /**
+     * Save camera pose and trim history
+     */
     recordPose() {
         let pos = this.target.position.asArray();
         let rot = this.target.rotation.asArray();
@@ -34,15 +44,24 @@ class Momentum {
         this.pose = this.calculateTrend()
     }
 
+    /**
+     * Averages the pose of the target over the last second
+     * TODO: move to Kalman filter and predict x_k^-
+     */
     calculateTrend() {
         // average vector
-        let sum = math.identity(4);
+        let sum = math.zeros(4, 4).toArray();
 
         for (let pose of this.poseHistory) {
-            sum = math.multiply(sum, pose.pose.T)
+            math.forEach(pose.pose.T.toArray(), (value, index, matrix) => {
+                sum[index[0]][index[1]] += value
+            })
         }
 
-        let avg = math.divide(sum, this.poseHistory.length);
+        let avg = math.zeros(4, 4).toArray();
+        math.forEach(sum, (value, index, matrix) => {
+            avg[index[0]][index[1]] = value / this.poseHistory.length;
+        })
         return avg;
     }
 }
@@ -53,23 +72,35 @@ class Momentum {
 class Pose {
     /**
      * Converts euclidian geometry into a transformation matrix for easy operations
-     * @param position euclidian position in whatever coordinate system you're using
+     * @param position euclidian position in whatever coordinate system you're using. 
+     * This can be replaced with a matrix if you just want a Pose object for a known transformation matrix
      * @param rotation euclidian rotation in radians
      */
-    constructor(position, rotation) {
-        if (rotation === null) {
-            this.T = math.matrix([
-                [1, 0, 0, position[0]], 
-                [0, 1, 0, position[1]], 
-                [0, 0, 1, position[2]],
-                [0, 0, 0, 1]
-            ])
+    constructor() {
+        if (arguments.length === 1) {
+            if (arguments[0] instanceof math.matrix) {
+                this.T = arguments[0];
+            }
+            else if (typeof(arguments[0]) === "object" && arguments[0].length === 4 && arguments[0][0].length === 4) {
+                this.T = math.matrix(arguments[0]);
+            }
+            else {
+                this.T = math.matrix([
+                    [1, 0, 0, arguments[0][0]], 
+                    [0, 1, 0, arguments[0][1]], 
+                    [0, 0, 1, arguments[0][2]],
+                    [0, 0, 0, 1]
+                ])
+            }
+
         }
-        else {
+        else if (arguments.length === 2) {
             /*
             Rotation matrix is definied by the combination of X, Y, and Z rotation matricies
             R = Z dot Y dot X
             */
+            let position = arguments[0];
+            let rotation = arguments[1]
 
             let X = math.matrix([ // rotation about x-axis
                 [1, 0, 0],
@@ -95,12 +126,29 @@ class Pose {
             
             this.T = transformationMatrix
         }
+        else {
+            console.error("Got", arguments.length, "arguments in Pose constructor\n", arguments);
+        }
     }
 
+    /**
+     * 1D array of position: [1, 2, 3] where [x, y, z]
+     */
     get position() {
-        return this.T.subset(math.index(math.range(0, 3), 3));
+        return math.squeeze(this.T.subset(math.index(math.range(0, 3), 3))).toArray();
     }
 
+    /**
+     * BABYLON.Vector3 of position
+     */
+    get positionVector() {
+        let pos = this.position;
+        return new BABYLON.Vector3(pos[0], pos[1], pos[2]);
+    }
+
+    /**
+     * 3x3 math.matrix of rotation
+     */
     get rotationMatrix() {
         return this.T.subset(math.index(math.range(0, 3), math.range(0, 3)));
     }

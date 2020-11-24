@@ -11,11 +11,14 @@ class Follower {
         this.referenceNode = null;
     }
 
+    /**
+     * Private function which causes the screen to follow the user
+     */
     follow() {
         // Get relative position
         let targetPose;
         if (this.target instanceof Momentum) {
-            targetPose = this.target.pose;
+            targetPose = new Pose(this.target.pose).T;
         }
         else if (this.target instanceof BABYLON.Node) {
             targetPose = new Pose(this.target.position.asArray(), this.target.rotation.asArray()).T;
@@ -25,32 +28,39 @@ class Follower {
         let pos = math.squeeze(newPose.subset(math.index(math.range(0, 3), 3))).toArray();
 
         this.mesh.position.x = pos[0];
-        // this.mesh.position.y = pos[1];
+        this.mesh.position.y = pos[1];
         this.mesh.position.z = pos[2];
-        // this.mesh.position = BABYLON.Vector3(pos[0], pos[1], pos[2]);
-
-        // TODO: add smoothing
-
-
     }
 
+    /**
+     * Sets the distance the object will be away from the target
+     * in the case of the streamers and the camera this will be
+     * where the streamer stays relative to the camera
+     */
     setOffset() {
+        // Target Pose is c_in_w
+        let targetPose;
         if (this.target instanceof Momentum) {
-            this.initialOffset = this.target.pose;
+             targetPose = new Pose(this.target.pose);
         }
         else if (this.target instanceof BABYLON.Node) {
-            // Target Pose is c_in_w
-            let targetPose = new Pose(this.target.position.asArray(), this.target.rotation.asArray());
-            // objectPose is v_in_w
-            let objectPose = new Pose(this.mesh.position.asArray(), this.mesh.rotation.asArray());
-            // inverse of target pose
-            console.log("Camera pose", targetPose, "\nVideo Pose", objectPose);
-            let w_in_c = math.inv(targetPose.T);
-    
-            this.initialOffset = math.multiply(w_in_c, objectPose.T);
+             targetPose = new Pose(this.target.position.asArray(), this.target.rotation.asArray());
         }
+
+        // objectPose is v_in_w
+        let objectPose = new Pose(this.mesh.position.asArray(), this.mesh.rotation.asArray());
+        // inverse of target pose
+        console.log("Camera pose", targetPose, "\nVideo Pose", objectPose);
+        let w_in_c = math.inv(targetPose.T);
+
+        this.initialOffset = math.multiply(w_in_c, objectPose.T);
+    
     }
 
+    /**
+     * Turns on and off the following behavior
+     * @param {boolean} updateOffset whether or not to update the fixed distance from the camera
+     */
     toggle(updateOffset=false) {
         if (!this.initialOffset || updateOffset) {
             this.setOffset();
@@ -68,6 +78,10 @@ class Follower {
         }
     }
 
+    /**
+     * Turns on the following behavior
+     * @param {boolean} updateOffset force update the fixed distance from the camera?
+     */
     enable(updateOffset=false) {
         // Set offset if needed
         if (!this.initialOffset || updateOffset) {
@@ -84,6 +98,9 @@ class Follower {
         }
     }
 
+    /**
+     * Turns off the following behavior
+     */
     disable() {
         if (this.isFollowing) {
             this.mesh._scene.unregisterBeforeRender(this._followingCallback);
