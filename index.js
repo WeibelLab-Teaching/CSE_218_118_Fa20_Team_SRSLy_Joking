@@ -15,6 +15,8 @@ app.use("/js", express.static(__dirname+'/scripts/'));
 app.use("/jquery.js", express.static(__dirname+"/node_modules/jquery/dist/jquery.js"));
 app.use("/babylon.js", express.static(__dirname+"/node_modules/babylonjs/babylon.js"));
 app.use("/assets", express.static(__dirname+"/assets/"));
+app.use("/math.js", express.static(__dirname+"/node_modules/mathjs/lib/browser/math.js"))
+app.use("/favicon.ico", express.static(__dirname+"/assets/favicon.ico"));
 
 /*
 =====================================
