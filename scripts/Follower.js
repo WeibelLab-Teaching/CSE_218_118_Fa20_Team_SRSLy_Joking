@@ -8,17 +8,47 @@ class Follower {
         this.scene = mesh.scene;
         this.isFollowing = false;
         this.initialOffset = null;
+        this.referenceNode = null;
     }
 
     follow() {
-        this.mesh.position.x = this.target.position.x + this.initialOffset.x;
-        this.mesh.position.z = this.target.position.z + this.initialOffset.z;
+        // Get relative position
+        let targetPose;
+        if (this.target instanceof Momentum) {
+            targetPose = this.target.pose;
+        }
+        else if (this.target instanceof BABYLON.Node) {
+            targetPose = new Pose(this.target.position.asArray(), this.target.rotation.asArray()).T;
+        }
+
+        let newPose = math.multiply(targetPose, this.initialOffset)
+        let pos = math.squeeze(newPose.subset(math.index(math.range(0, 3), 3))).toArray();
+
+        this.mesh.position.x = pos[0];
+        // this.mesh.position.y = pos[1];
+        this.mesh.position.z = pos[2];
+        // this.mesh.position = BABYLON.Vector3(pos[0], pos[1], pos[2]);
+
         // TODO: add smoothing
+
+
     }
 
     setOffset() {
-        this.initialOffset = this.mesh.position.subtract(this.target.position);
-        console.log("[Follower] offset set to", this.initialOffset);
+        if (this.target instanceof Momentum) {
+            this.initialOffset = this.target.pose;
+        }
+        else if (this.target instanceof BABYLON.Node) {
+            // Target Pose is c_in_w
+            let targetPose = new Pose(this.target.position.asArray(), this.target.rotation.asArray());
+            // objectPose is v_in_w
+            let objectPose = new Pose(this.mesh.position.asArray(), this.mesh.rotation.asArray());
+            // inverse of target pose
+            console.log("Camera pose", targetPose, "\nVideo Pose", objectPose);
+            let w_in_c = math.inv(targetPose.T);
+    
+            this.initialOffset = math.multiply(w_in_c, objectPose.T);
+        }
     }
 
     toggle(updateOffset=false) {

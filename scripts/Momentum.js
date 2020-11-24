@@ -7,6 +7,7 @@ class Momentum {
     constructor(objectToTrack) {
         this.target = objectToTrack;
         this.poseHistory = []
+        this.pose = null;
     }
 
     recordPose() {
@@ -29,6 +30,8 @@ class Momentum {
                 break;
             }
         }
+
+        this.pose = this.calculateTrend()
     }
 
     calculateTrend() {

@@ -76,7 +76,7 @@ async function createScene(callback) {
 	// play button
 	let playButton = new BABYLON.GUI.HolographicButton("Play Button");
 	guiPanel.addControl(playButton);
-	playButton.onPointerUpObservable.add(() => {streamer.play()});
+	playButton.onPointerUpObservable.add(() => {for (let streamer of ApplicationState.streamers) {streamer.play()}});
 
 	//// add text
 	// follow
@@ -147,36 +147,28 @@ window.onload = function() {
 	}
 	if (!engine) throw 'engine should not be null.';
 	createScene((scene) => {
+		// Render Loop
 		engine.runRenderLoop(function () {
 			if (scene && scene.activeCamera) {
 				scene.render();
 			}
 		});
 
-		// Resize
+		// Handle Resize
 		window.addEventListener("resize", function () {
 			engine.resize();
 		});
 
 
-		// Setup Streamers
-		addStreamer("assets/samplevid.mp4")
-
-		// Billboard
-		scene.onBeforeRenderObservable.add(function() {
-			for (streamer of ApplicationState.streamers) {
-				streamer.mesh.lookAt(scene.activeCamera.position, Math.PI);
-			}
-		})
-
+		
 		// Setup Momentum Tracking
 		p = new Momentum(scene.activeCamera);
 		scene.onBeforeRenderObservable.add(function() {
 			p.recordPose();
-			let velocity = p.calculateTrend().subset(math.index(math.range(0, 3), 3)).toArray();
-			console.log(velocity);
-			// TODO: apply velocity to streamers
 		})
+
+		// TEMP: Addd sample streamer
+		addStreamer("assets/samplevid.mp4")
 	});
 }
 
