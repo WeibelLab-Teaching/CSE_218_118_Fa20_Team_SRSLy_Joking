@@ -344,7 +344,7 @@ class RoomClient {
                 elem.autoplay = true
                 elem.className = "vid"
                 this.localMediaEl.appendChild(elem)
-                addStreamer(stream.id)
+                addStreamer(elem)
             }
 
             producer.on('trackended', () => {
@@ -417,7 +417,7 @@ class RoomClient {
                 elem.autoplay = true
                 elem.className = "vid"
                 this.remoteVideoEl.appendChild(elem)
-                addStreamer(stream.id)
+                addStreamer(elem)
             } else {
                 elem = document.createElement('audio')
                 elem.srcObject = stream
