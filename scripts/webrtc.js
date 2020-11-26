@@ -198,10 +198,10 @@ window.onload = function() {
 function addStreamer(uri) {
 	// Create <video> tag in html
 	// TODO: hook up <video> tag to WebRTC
-	// let streamsContainer = document.getElementById("streams");
-	// let video = document.createElement("video");
-	// video.setAttribute("src", uri);
-	// streamsContainer.appendChild(video);
+	let streamsContainer = document.getElementById("streams");
+	let video = document.createElement("video");
+	video.setAttribute("src", uri);
+	streamsContainer.appendChild(video);
 
 	// Add to app state
 	let streamer = new Streamer(video, scene);
