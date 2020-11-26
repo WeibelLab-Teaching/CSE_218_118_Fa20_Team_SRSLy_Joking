@@ -23,6 +23,8 @@
 
         <script src="js/Streamer.js"></script>
         <script src="js/Follower.js"></script>
+        <script src="js/Momentum.js"></script>
+        <script src="math.js"></script>
 
         <style>
             html, body {
@@ -41,12 +43,9 @@
         </style>
     </head>
 <body onload="createScene()">
-    <div style="position:absolute; margin:2em;">
-        <button onclick="streamer.play()" style="padding:2em; font-size:x-large">Play</button>
-        <button onclick="streamer.pause()" style="padding:2em; font-size:x-large">Pause</button>
-    </div>
     <canvas id="renderCanvas"></canvas>
-    <video style="display:none"></video>
+    <div id="streams" style="display:none">
+    </div>
     <script src="js/main.js"></script>
 </body>
 </html>

@@ -30,7 +30,7 @@ function joinRoom(name, room_id) {
   if (rc && rc.isOpen()) {
     console.log('already connected to a room')
   } else {
-    rc = new RoomClient(localMedia, remoteVideos, remoteAudios, window.mediasoupClient, socket, room_id, name, roomOpen)
+    rc = new RoomClient(streams, streams, remoteAudios, window.mediasoupClient, socket, room_id, name, roomOpen)
 
     addListeners()
   }
