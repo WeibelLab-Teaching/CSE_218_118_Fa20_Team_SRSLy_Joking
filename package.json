@@ -1,11 +1,12 @@
 {
-  "name": "walk_and_talk",
+  "name": "srslyjoking",
   "version": "1.0.0",
   "description": "System for allowing users to walk in VR while in zoom meetings. Additionally, users will be able to have avatar based communication between VR devices",
   "main": "index.js",
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon index.js"
+    "start": "node ./bin/www",
+    "test": "nodemon index.js"
   },
   "repository": {
     "type": "git",
@@ -26,6 +27,11 @@
     "express": "^4.17.1",
     "jquery": "^3.5.1",
     "mathjs": "^8.0.1",
-    "websocket": "^1.0.32"
+    "websocket": "^1.0.32",
+    "cookie-parser": "~1.4.4",
+    "debug": "~2.6.9",
+    "http-errors": "~1.6.3",
+    "morgan": "~1.9.1",
+    "pug": "2.0.0-beta11"
   }
 }
