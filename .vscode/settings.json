@@ -1,0 +1,8 @@
+{
+    "appService.zipIgnorePattern": [
+        "node_modules{,/**}",
+        ".vscode{,/**}"
+    ],
+    "appService.defaultWebAppToDeploy": "/subscriptions/2090655e-ff88-41e1-9ec3-fd402ff9a4b0/resourceGroups/appsvc_linux_centralus/providers/Microsoft.Web/sites/SRSLyJoking",
+    "appService.deploySubpath": "."
+}
