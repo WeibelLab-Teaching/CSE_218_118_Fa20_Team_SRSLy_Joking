@@ -11,6 +11,13 @@ class Follower {
         this.referenceNode = null;
     }
 
+    destructor() {
+        if (this.referenceNode) {
+            this.referenceNode.dispose();
+        }
+        this.disable();
+    }
+
     /**
      * Private function which causes the screen to follow the user
      */
@@ -19,8 +26,7 @@ class Follower {
         let targetPose;
         if (this.target instanceof Momentum) {
             targetPose = new Pose(this.target.pose).T;
-        }
-        else if (this.target instanceof BABYLON.Node) {
+        } else if (this.target instanceof BABYLON.Node) {
             targetPose = new Pose(this.target.position.asArray(), this.target.rotation.asArray()).T;
         }
 
@@ -41,10 +47,9 @@ class Follower {
         // Target Pose is c_in_w
         let targetPose;
         if (this.target instanceof Momentum) {
-             targetPose = new Pose(this.target.pose);
-        }
-        else if (this.target instanceof BABYLON.Node) {
-             targetPose = new Pose(this.target.position.asArray(), this.target.rotation.asArray());
+            targetPose = new Pose(this.target.pose);
+        } else if (this.target instanceof BABYLON.Node) {
+            targetPose = new Pose(this.target.position.asArray(), this.target.rotation.asArray());
         }
 
         // objectPose is v_in_w
@@ -54,14 +59,14 @@ class Follower {
         let w_in_c = math.inv(targetPose.T);
 
         this.initialOffset = math.multiply(w_in_c, objectPose.T);
-    
+
     }
 
     /**
      * Turns on and off the following behavior
      * @param {boolean} updateOffset whether or not to update the fixed distance from the camera
      */
-    toggle(updateOffset=false) {
+    toggle(updateOffset = false) {
         if (!this.initialOffset || updateOffset) {
             this.setOffset();
         }
@@ -70,8 +75,7 @@ class Follower {
             this.mesh._scene.unregisterBeforeRender(this._followingCallback);
             this.isFollowing = false;
             this._followingCallback = null;
-        }
-        else {
+        } else {
             this._followingCallback = this.follow.bind(this);
             this.mesh._scene.registerBeforeRender(this._followingCallback);
             this.isFollowing = true;
@@ -82,7 +86,7 @@ class Follower {
      * Turns on the following behavior
      * @param {boolean} updateOffset force update the fixed distance from the camera?
      */
-    enable(updateOffset=false) {
+    enable(updateOffset = false) {
         // Set offset if needed
         if (!this.initialOffset || updateOffset) {
             this.setOffset();
@@ -90,8 +94,7 @@ class Follower {
 
         if (this.isFollowing) {
             return;
-        }
-        else {
+        } else {
             this._followingCallback = this.follow.bind(this);
             this.mesh._scene.registerBeforeRender(this._followingCallback);
             this.isFollowing = true;
@@ -106,8 +109,7 @@ class Follower {
             this.mesh._scene.unregisterBeforeRender(this._followingCallback);
             this.isFollowing = false;
             this._followingCallback = null;
-        }
-        else {
+        } else {
             return;
         }
     }
