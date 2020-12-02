@@ -15,7 +15,12 @@ var p = undefined;
 var ApplicationState = {
 	"following": false,
 	"streamers": [],
-	"play_area": [[1, 0, 1], [1, 0, -1], [-1, 0, -1], [-1, 0, 1]]
+	"play_area": [
+		[1, 0, 1],
+		[1, 0, -1],
+		[-1, 0, -1],
+		[-1, 0, 1]
+	]
 }
 
 var createDefaultEngine = function () {
@@ -30,17 +35,21 @@ async function createScene(callback) {
 	scene = new BABYLON.Scene(engine);
 	xr = await scene.createDefaultXRExperienceAsync();
 	xrHelper = new BABYLON.VRExperienceHelper(scene)
-	
+
 	// Set cursor options
 	if (true || 'no controllers exist / is phone VR') {
-		
-		xrHelper.setLaserColor(new BABYLON.Color3(1,0,0));
+
+		xrHelper.setLaserColor(new BABYLON.Color3(1, 0, 0));
 		xrHelper.setGazeColor(new BABYLON.Color3(0, 1, 0));
 		xrHelper.enableInteractions()
 	}
 
 	// Set Ground Plane
-	let ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 40, height: 40, subdivisions: 4}, scene);
+	let ground = BABYLON.MeshBuilder.CreateGround("ground", {
+		width: 40,
+		height: 40,
+		subdivisions: 4
+	}, scene);
 	// BABYLON.VRExperienceHelper.addFloorMesh(ground)
 	xrHelper.enableTeleportation({
 		floorMeshName: "ground"
@@ -52,7 +61,7 @@ async function createScene(callback) {
 	let light = new BABYLON.DirectionalLight("light1", new BABYLON.Vector3(0, -1, 0), scene);
 	//light.intensity = 30;
 
-	
+
 	// Set UI Control panel
 	var guiManager = new BABYLON.GUI.GUI3DManager(scene);
 	var guiPanel = new BABYLON.GUI.StackPanel3D();
@@ -62,7 +71,7 @@ async function createScene(callback) {
 	guiPanel.node.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
 	guiPanel.position.z = 1;
 	guiPanel.position.y = -0.25;
-	guiPanel.node.rotation = new BABYLON.Vector3(Math.PI/3, 0, 0);
+	guiPanel.node.rotation = new BABYLON.Vector3(Math.PI / 3, 0, 0);
 
 	//// add buttons
 	// follow / walking mode button
@@ -76,7 +85,11 @@ async function createScene(callback) {
 	// play button
 	let playButton = new BABYLON.GUI.HolographicButton("Play Button");
 	guiPanel.addControl(playButton);
-	playButton.onPointerUpObservable.add(() => {for (let streamer of ApplicationState.streamers) {streamer.play()}});
+	playButton.onPointerUpObservable.add(() => {
+		for (let streamer of ApplicationState.streamers) {
+			streamer.play()
+		}
+	});
 
 	//// add text
 	// follow
@@ -136,9 +149,9 @@ async function createScene(callback) {
 	}
 };
 
-window.onload = function() {
+window.onload = function () {
 
-	
+
 	try {
 		engine = createDefaultEngine();
 	} catch (e) {
@@ -160,10 +173,10 @@ window.onload = function() {
 		});
 
 
-		
+
 		// Setup Momentum Tracking
 		p = new Momentum(scene.activeCamera);
-		scene.onBeforeRenderObservable.add(function() {
+		scene.onBeforeRenderObservable.add(function () {
 			p.recordPose();
 		})
 
@@ -195,6 +208,33 @@ function addStreamer(uri) {
 	}
 }
 
+function removeStreamer(uri_or_video_elm) {
+	let target;
+
+	// Find the video element if given a URL
+	for (let streamer of ApplicationState.streamers) {
+		if (typeof (uri_or_video_elm) === "string") {
+			if (streamer.src.src === uri_or_video_elm) {
+				target = streamer;
+				break;
+			}
+		} else {
+			if (streamer.src === uri_or_video_elm) {
+				target = streamer;
+				break;
+			}
+		}
+	}
+
+	console.log("Removing", target);
+
+	// Remove from AppState
+	ApplicationState.streamers.splice(ApplicationState.streamers.indexOf(target), 1);
+
+	// Remove visuals
+	target.destructor();
+}
+
 /**
  * Toggles on and off the following behavior
  */
@@ -205,8 +245,7 @@ function onFollowClicked() {
 		for (streamer of ApplicationState.streamers) {
 			streamer.follower.enable();
 		}
-	}
-	else {
+	} else {
 		for (streamer of ApplicationState.streamers) {
 			streamer.follower.disable();
 		}
@@ -230,19 +269,19 @@ function onEnvironmentClicked() {
  * all other 'spawned' trees are instances of the first.
  * @param {int} numberToSpawn The number of trees to spawn
  */
-function spawnTrees(numberToSpawn=15) {
+function spawnTrees(numberToSpawn = 15) {
 	function spawn(numberToSpawn) {
 		// spawn a bunch of trees
 		let pos;
 
-		for (let i=0; i<numberToSpawn; i++) {
-			pos = new BABYLON.Vector3(Math.random()*4*numberToSpawn-2*numberToSpawn, 0, Math.random()*4*numberToSpawn-2*numberToSpawn);
+		for (let i = 0; i < numberToSpawn; i++) {
+			pos = new BABYLON.Vector3(Math.random() * 4 * numberToSpawn - 2 * numberToSpawn, 0, Math.random() * 4 * numberToSpawn - 2 * numberToSpawn);
 			while (isInPlayArea(pos.asArray())) {
 				console.log(`position (${pos.x}, ${pos.y}, ${pos.z}) is in play area`);
-				pos = new BABYLON.Vector3(Math.random()*4*numberToSpawn-2*numberToSpawn, 0, Math.random()*4*numberToSpawn-2*numberToSpawn);
+				pos = new BABYLON.Vector3(Math.random() * 4 * numberToSpawn - 2 * numberToSpawn, 0, Math.random() * 4 * numberToSpawn - 2 * numberToSpawn);
 			}
 
-			for (let j=0; j<treeMesh.length; j++) {
+			for (let j = 0; j < treeMesh.length; j++) {
 				let instance = treeMesh[j].createInstance(`Tree${i}_part${j}`);
 				instance.locallyTranslate(pos);
 			}
@@ -252,23 +291,24 @@ function spawnTrees(numberToSpawn=15) {
 
 
 	if (!treeMesh) {
-		BABYLON.SceneLoader.ImportMesh("", "/assets/", "Tree2.glb", scene, function(meshes) {
-			console.log("Loaded at", meshes.map((m) => {return m.position}));
+		BABYLON.SceneLoader.ImportMesh("", "/assets/", "Tree2.glb", scene, function (meshes) {
+			console.log("Loaded at", meshes.map((m) => {
+				return m.position
+			}));
 
 			treeMesh = meshes;
-			let pos = new BABYLON.Vector3(Math.random()*4*numberToSpawn-2*numberToSpawn, 0, Math.random()*4*numberToSpawn-2*numberToSpawn);
+			let pos = new BABYLON.Vector3(Math.random() * 4 * numberToSpawn - 2 * numberToSpawn, 0, Math.random() * 4 * numberToSpawn - 2 * numberToSpawn);
 			for (mesh of meshes) {
 				mesh.locallyTranslate(pos);
 			}
-			spawn(numberToSpawn-1) // -1 because we just made one by importing the mesh
+			spawn(numberToSpawn - 1) // -1 because we just made one by importing the mesh
 		});
 
 		// Set Ground texture
 		let groundMaterial = new BABYLON.StandardMaterial("groundMat", scene);
 		groundMaterial.diffuseTexture = new BABYLON.Texture("/assets/ground/Color.jpg", scene);
 		scene.getMeshesByID("ground")[0].material = groundMaterial;
-	}
-	else {
+	} else {
 		spawn(numberToSpawn);
 	}
 }
@@ -281,15 +321,15 @@ function spawnTrees(numberToSpawn=15) {
 function isInPlayArea(point) {
 
 	let inside = false;
-	for (let i=0, j=playArea.length-1; i<playArea.length; j = i++) {
+	for (let i = 0, j = playArea.length - 1; i < playArea.length; j = i++) {
 		let xi = playArea[i][0];
 		let zi = playArea[i][2];
 
 		let xj = playArea[j][0];
 		let zj = playArea[j][2];
 
-		let intersect = ((zi > point[2]) != (zj > point[2])) && 
-						(point[0] < (xj - xi) * (point[2]-zi) / (zj - zi) + xi);
+		let intersect = ((zi > point[2]) != (zj > point[2])) &&
+			(point[0] < (xj - xi) * (point[2] - zi) / (zj - zi) + xi);
 		if (intersect) inside = !inside;
 	}
 
