@@ -4,7 +4,9 @@
  * Module dependencies.
  */
 
-var app = require('../index');
+var servers = require('../index');
+var app = servers.app;
+var wss = servers.wss;
 var debug = require('debug')('srslyjoking:server');
 var http = require('http');
 
@@ -20,6 +22,7 @@ app.set('port', port);
  */
 
 var server = http.createServer(app);
+var websocket
 
 /**
  * Listen on provided port, on all network interfaces.

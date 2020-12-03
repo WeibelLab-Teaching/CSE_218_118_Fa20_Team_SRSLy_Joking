@@ -1,6 +1,10 @@
 const express = require('express');
 const fs = require('fs');
+const http = require('http');
 const https = require('https');
+
+const WSServer = require("./SRSLyClasses/WSServer.js");
+var AppState = WSServer.AppState;
 
 var createError = require('http-errors');
 var path = require('path');
@@ -8,7 +12,6 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
 const app = express();
-
 
 
 
@@ -42,33 +45,31 @@ app.use("/favicon.ico", express.static(__dirname+"/assets/favicon.ico"));
         RUN SERVER
 =====================================
 */
-// https.createServer({ // need https for webcam
-//     key: fs.readFileSync(__dirname+'/cert/server.key'),
-//     cert: fs.readFileSync(__dirname+'/cert/server.cert')
-// }, app)
-// .listen(3000, (err) => {
-//     if (err) console.log("Error starting express server");
+http.createServer(app)
+.listen(3000, (err) => {
+    if (err) console.log("Error starting express server");
 
-//     // Get IP
-//     let nets = networkInterfaces();
-//     let results = Object.create(null); // or just '{}', an empty object
+    // // Get IP
+    // let nets = networkInterfaces();
+    // let results = Object.create(null); // or just '{}', an empty object
     
-//     for (const name of Object.keys(nets)) {
-//         for (const net of nets[name]) {
-//             // skip over non-ipv4 and internal (i.e. 127.0.0.1) addresses
-//             if (net.family === 'IPv4' && !net.internal) {
-//                 if (!results[name]) {
-//                     results[name] = [];
-//                 }
+    // for (const name of Object.keys(nets)) {
+    //     for (const net of nets[name]) {
+    //         // skip over non-ipv4 and internal (i.e. 127.0.0.1) addresses
+    //         if (net.family === 'IPv4' && !net.internal) {
+    //             if (!results[name]) {
+    //                 results[name] = [];
+    //             }
     
-//                 results[name].push(net.address);
-//             }
-//         }
-//     }
-//     console.log(results);
-//     let ip = results[Object.keys(results)[0]][0]
-//     console.log("Hosting Server on https://"+ip+":"+PORT.toString());
-// })
+    //             results[name].push(net.address);
+    //         }
+    //     }
+    // }
+    // console.log(results);
+    // let ip = results[Object.keys(results)[0]][0]
+    // console.log("Hosting Server on https://"+ip+":"+PORT.toString());
+    console.log("Started port 3000");
+})
 
 
 // catch 404 and forward to error handler
@@ -88,3 +89,10 @@ app.use(function(req, res, next) {
   });
   
   module.exports = app;
+
+
+
+
+
+
+
