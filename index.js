@@ -1,11 +1,34 @@
 const express = require('express');
 const fs = require('fs');
+const http = require('http');
 const https = require('https');
+
+const WSServer = require("./SRSLyClasses/WSServer.js");
+var AppState = WSServer.AppState;
+
+var createError = require('http-errors');
+var path = require('path');
+var cookieParser = require('cookie-parser');
+var logger = require('morgan');
+
 const app = express();
 const { networkInterfaces } = require('os');
 
 const PORT = 3000;
 
+
+// view engine setup
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'pug');
+
+app.use(logger('dev'));
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
+// app.use(express.static(path.join(__dirname, 'public')));
+
+
+// Page Table
 app.get('/', (req, res) => {
     res.sendFile(__dirname+"/pages/main.html");
     console.log("sent main.html");
@@ -35,7 +58,7 @@ app.use("/favicon.ico", express.static(__dirname+"/assets/favicon.ico"));
         RUN SERVER
 =====================================
 */
-const httpsServer = https.createServer({ // need https for webcam
+https.createServer({ // need https for webcam
     key: fs.readFileSync(__dirname+'/cert/server.key'),
     cert: fs.readFileSync(__dirname+'/cert/server.cert')
 }, app);
