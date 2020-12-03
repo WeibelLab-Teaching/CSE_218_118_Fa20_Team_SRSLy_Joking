@@ -1,12 +1,11 @@
 {
-  "name": "srslyjoking",
+  "name": "walk_and_talk",
   "version": "1.0.0",
   "description": "System for allowing users to walk in VR while in zoom meetings. Additionally, users will be able to have avatar based communication between VR devices",
   "main": "index.js",
-  "private": true,
   "scripts": {
-    "start": "node ./bin/www",
-    "test": "nodemon index.js"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon index.js"
   },
   "repository": {
     "type": "git",
@@ -24,6 +23,7 @@
   "homepage": "https://github.com/WeibelLab-Teaching/CSE_218_118_Fa20_Team_SRSLy_Joking#readme",
   "dependencies": {
     "babylonjs": "^4.1.0",
+<<<<<<< HEAD
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
     "express": "^4.17.1",
@@ -35,5 +35,11 @@
     "uuid": "^8.3.1",
     "websocket": "^1.0.32",
     "ws": "^7.4.0"
+=======
+    "express": "^4.17.1",
+    "jquery": "^3.5.1",
+    "mathjs": "^8.0.1",
+    "websocket": "^1.0.32"
+>>>>>>> parent of 02c6608... Setting up for Azure
   }
 }
