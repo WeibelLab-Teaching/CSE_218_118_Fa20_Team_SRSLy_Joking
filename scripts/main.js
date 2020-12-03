@@ -185,7 +185,11 @@ window.onload = function () {
 		// Establish Websocket connection and load ApplicationState
 		EstablishWebsocketConnection((conn) => {
 			// TEMP: Addd sample streamer
-			// addStreamer("assets/samplevid.mp4")
+			addStreamer("assets/samplevid.mp4", scene);
+			
+			// TEMP: Add sample avatar
+			sample_avatar = "https://d1a370nemizbjq.cloudfront.net/d41e5dc3-edd2-44b0-91a8-0b1c75c2ac43.glb";
+			addAvatar("assets/samplevid.mp4", sample_avatar)
 		})
 	});
 }
@@ -205,6 +209,22 @@ function addStreamer(uri) {
 
 	// Add to app state
 	let streamer = new Streamer(video, scene);
+	ApplicationState.streamers.push(streamer);
+
+	// Set to follow
+	if (ApplicationState.following) {
+		streamer.follower.enable();
+	}
+}
+
+function addAvatar(model, uri) {
+	let streamsContainer = document.getElementById("streams");
+	let video = document.createElement("video");
+	video.setAttribute("src", uri);
+	streamsContainer.appendChild(video);
+
+	// Add to app state
+	let streamer = new Streamer(video, scene, null, null, null, model);
 	ApplicationState.streamers.push(streamer);
 
 	// Set to follow

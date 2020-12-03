@@ -1,21 +1,29 @@
 class Streamer {
-    constructor(video, scene, resolution = [1920, 1080], height = 0.3, position=null) {
+    constructor(video, scene, resolution = [1920, 1080], height = 0.3, position=null, avatarUri=null) {
         this.name = "video" + ApplicationState.streamers.length;
         this.src = video;
         this.scene = scene;
 
-        // Create a material from the video
-        let material = new BABYLON.StandardMaterial(this.name + "Mat", scene);
-        let texture = new BABYLON.VideoTexture(this.name, video, scene, true, false);
-        material.diffuseTexture = texture;
+        if (avatarUri) {
+            this.avatar = avatarUri;
+            this.mesh = BABYLON.SceneLoader.ImportMeshAsync(this.name, this.modelUri, scene)
+        }
+        else {
+            // Create a material from the video
+            let material = new BABYLON.StandardMaterial(this.name + "Mat", scene);
+            let texture = new BABYLON.VideoTexture(this.name, video, scene, true, false);
+            material.diffuseTexture = texture;
 
-        // Create Mesh
-        this.mesh = BABYLON.Mesh.CreatePlane(this.name + "Plane", 1, scene);
-        this.mesh.material = material;
+            // Create Mesh
+            this.mesh = BABYLON.Mesh.CreatePlane(this.name + "Plane", 1, scene);
+            this.mesh.material = material;
+
+            // Scale to appropriate size
+            this.mesh.scaling.y = height;
+            this.mesh.scaling.x = this.mesh.scaling.y * resolution[0] / resolution[1]; // set aspect ratio
+        }
 
         // Position Mesh
-        this.mesh.scaling.y = height;
-        this.mesh.scaling.x = this.mesh.scaling.y * resolution[0] / resolution[1]; // set aspect ratio
         if (position) {
             this.mesh.position = position;
         }
@@ -52,11 +60,15 @@ class Streamer {
     serialize() {
         return {
             uri: this.src.src,
+            avatar: this.avatar,
             transform: this.mesh.getWorldMatrix().toAarray()
         }
     }
 
     static deserialize(serial) {
+        // TODO: Deserialize with avatar
+
+
         console.log("Deserializing Streamer", serial);
         let streamsContainer = document.getElementById("streams");
         let video = document.createElement("video");
