@@ -1,5 +1,5 @@
 class Streamer {
-    constructor(video, scene, resolution = [1920, 1080], height = 0.3) {
+    constructor(video, scene, resolution = [1920, 1080], height = 0.3, position=null) {
         this.name = "video" + ApplicationState.streamers.length;
         this.src = video;
         this.scene = scene;
@@ -14,13 +14,18 @@ class Streamer {
         this.mesh.material = material;
 
         // Position Mesh
-        let pos = new BABYLON.Vector3(Math.random(-.5, .5), 2, Math.random(0.5, 1));
         this.mesh.scaling.y = height;
         this.mesh.scaling.x = this.mesh.scaling.y * resolution[0] / resolution[1]; // set aspect ratio
-        this.mesh.position = pos;
+        if (position) {
+            this.mesh.position = position;
+        }
+        else {
+            let pos = new BABYLON.Vector3(Math.random(-.5, .5), 2, Math.random(0.5, 1));
+            this.mesh.position = pos;
+        }
 
         // Make sure it's always illuminated
-        this.light = new BABYLON.PointLight(name + "PlaneLight", pos.add(new BABYLON.Vector3(0, 0, .2)), scene);
+        this.light = new BABYLON.PointLight(name + "PlaneLight", this.mesh.position.add(new BABYLON.Vector3(0, 0, .2)), scene);
         this.light.parent = this.mesh;
 
         // Billboard
@@ -42,6 +47,39 @@ class Streamer {
 
         // Remove listeners
         this.follower.destructor();
+    }
+
+    serialize() {
+        return {
+            uri: this.src.src,
+            transform: this.mesh.getWorldMatrix().toAarray()
+        }
+    }
+
+    static deserialize(serial) {
+        console.log("Deserializing Streamer", serial);
+        let streamsContainer = document.getElementById("streams");
+        let video = document.createElement("video");
+        video.setAttribute("src", serial.uri);
+        streamsContainer.appendChild(video);
+
+        // Set position
+        let transformationMatrix = BABYLON.Matrix.FromValues(
+            serial.transform[0], serial.transform[1], serial.transform[2], serial.transform[3], 
+            serial.transform[4], serial.transform[5], serial.transform[6], serial.transform[7], 
+            serial.transform[8], serial.transform[9], serial.transform[10], serial.transform[11], 
+            serial.transform[12], serial.transform[13], serial.transform[14], serial.transform[15]);
+
+        // Create Streamer object
+        console.log("Creating Streamer at", transformationMatrix.getTranslation());
+        let streamer = new Streamer(video, scene, [1920, 1080], 0.3, transformationMatrix.getTranslation());
+
+        // Set to follow
+        if (ApplicationState.following) {
+            streamer.follower.enable();
+        }
+
+        return streamer;
     }
 
     get position() {

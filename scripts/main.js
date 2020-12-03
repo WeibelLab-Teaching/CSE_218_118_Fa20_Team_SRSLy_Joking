@@ -11,16 +11,18 @@ var p = undefined;
  * Add features to the ApplicationState variable as you desire
  * This will help us with saving and loading later.
  * So, if there is anything you might want saved, add and control it here.
+ * These particular settings will be overriden by the server upon connecting.
  */
 var ApplicationState = {
-	"following": false,
-	"streamers": [],
-	"play_area": [
+	following: false,
+	streamers: [],
+	play_area: [
 		[1, 0, 1],
 		[1, 0, -1],
 		[-1, 0, -1],
 		[-1, 0, 1]
-	]
+	],
+	environment: null
 }
 
 var createDefaultEngine = function () {
@@ -180,8 +182,11 @@ window.onload = function () {
 			p.recordPose();
 		})
 
-		// TEMP: Addd sample streamer
-		addStreamer("assets/samplevid.mp4")
+		// Establish Websocket connection and load ApplicationState
+		EstablishWebsocketConnection((conn) => {
+			// TEMP: Addd sample streamer
+			// addStreamer("assets/samplevid.mp4")
+		})
 	});
 }
 
@@ -321,12 +326,12 @@ function spawnTrees(numberToSpawn = 15) {
 function isInPlayArea(point) {
 
 	let inside = false;
-	for (let i = 0, j = playArea.length - 1; i < playArea.length; j = i++) {
-		let xi = playArea[i][0];
-		let zi = playArea[i][2];
+	for (let i = 0, j = ApplicationState.playArea.length - 1; i < ApplicationState.playArea.length; j = i++) {
+		let xi = ApplicationState.playArea[i][0];
+		let zi = ApplicationState.playArea[i][2];
 
-		let xj = playArea[j][0];
-		let zj = playArea[j][2];
+		let xj = ApplicationState.playArea[j][0];
+		let zj = ApplicationState.playArea[j][2];
 
 		let intersect = ((zi > point[2]) != (zj > point[2])) &&
 			(point[0] < (xj - xi) * (point[2] - zi) / (zj - zi) + xi);
@@ -334,4 +339,23 @@ function isInPlayArea(point) {
 	}
 
 	return inside;
+}
+
+
+
+function SetApplicationState(state) {
+	ApplicationState = state;
+
+	// Load Streamers
+	for (let i in ApplicationState.streamers) {
+		ApplicationState.streamers[i] = Streamer.deserialize(ApplicationState.streamers[i]);
+	}
+
+	// Load Environment
+	switch(ApplicationState.environment) {
+		case "forest":
+			spawnTrees();
+		default:
+			break;
+	}
 }
