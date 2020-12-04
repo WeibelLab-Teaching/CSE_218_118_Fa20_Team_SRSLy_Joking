@@ -31,7 +31,8 @@ const DEFAULT_CLIENT_STATE = {
         [-1, 0, -1],
         [-1, 0, 1]
     ],
-    environment: "forest"
+    environment: "forest",
+    room: "118218"
   }
   
   var AppState = {
@@ -60,12 +61,14 @@ wss.on('connection', function(conn) {
                     // broadcast pose
                     msg["id"] = conn.SRSLy_id;
                     bcast(conn, JSON.stringify(msg));
-                    console.log("Got user", client_index,"pose");
 
                     // TODO: accumulate poses from all clients and send as one packet
                     break;
                 case "APPSTATE":
                     AppState.clients[client_index] = msg.content;
+                    break;
+                case "RTC SOCKET ID":
+                    bcast(conn, JSON.stringify(msg));
                     break;
                 case "BCAST":
                 case "BROADCAST":

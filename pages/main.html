@@ -1,5 +1,8 @@
 <!DOCTYPE html>
+<!-- A lot of the webRTC/mediasoup code is adapted from https://github.com/Dirvann/mediasoup-sfu-webrtc-video-rooms -->
+
 <html>
+    
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 
@@ -20,13 +23,23 @@
         <script src="https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js"></script>
         <script src="https://preview.babylonjs.com/gui/babylon.gui.min.js"></script>
         <script src="https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js"></script>
+        <!-- <script src="babylon-vrm.js"></script> -->
 
-        <script src="babylon-vrm.js"></script>
+        <!-- webrtc scripts-->
+        <script src="socket.io/socket.io.js"></script>
+        <script src="js/modules/mediasoupclient.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/EventEmitter/5.2.8/EventEmitter.min.js"></script>
+        <script src="js/RoomClient.js"></script>
+
+        <!-- misc scripts -->
+        <script src="math.js"></script>
+
+        <!-- SRSLy Joking scripts -->
         <script src="js/Streamer.js"></script>
         <script src="js/Follower.js"></script>
         <script src="js/Momentum.js"></script>
-        <script src="math.js"></script>
         <script src="js/WSClient.js"></script>
+        <script src="js/AvatarManager.js"></script>
 
         <style>
             html, body {
@@ -42,12 +55,100 @@
                 height: 100%;
                 touch-action: none;
             }
+
+
+
+            
+            .containers {
+                display: grid;
+                grid-gap: 5px;
+                grid-template-columns: repeat(auto-fit, 1fr);
+                grid-template-rows: repeat(auto-fit, 300px);
+            }
+
+            .container {
+                display: flex;
+            }
+
+            .vid {
+                flex: 0 1 auto;
+                height: 400px;
+            }
+
+            .settings {
+                background-color: #4CAF50;
+                border: none;
+                color: white;
+                padding: 5px 10px;
+                text-align: center;
+                text-decoration: none;
+                display: inline-block;
+                font-size: 14px;
+                margin: 2px 2px;
+                cursor: pointer;
+            }
+
+            .hidden {
+                display: none
+            }
+
+        
         </style>
     </head>
+
+    <div id="login">
+        <!-- Room:   <input id="roomidInput" value="123" type="text" /> -->
+        <!--<button id="createRoom" onclick="createRoom(roomid.value)" label="createRoom">Create Room</button>-->
+        <!-- <br />
+        User: <input id='nameInput' value="bob" type="text" />
+        <button id='joinButton' onclick="joinRoom(nameInput.value, roomidInput.value)">Join</button> -->
+
+        <!-- TEMP: 
+            Tommy commented this section out
+            in main.js, line 200ish, in the callback for EstablishWebsocketConnection:
+                joinRoom get's called automatically now so users will be immediately placed into a room.
+                The room id is set by the server (a saved state).
+                For now, this is just going to be room "118218"
+                The user's name will be the universally unique identify the server assigns its clients
+                This name will then be used to link avatars to audio and movements.
+        -->
+    </div>
+    <div id="control" class="hidden">
+        <button id='exitButton' class='hidden' onclick="rc.exit()">Exit</button>
+        <br/>
+        audio: <select id="audioSelect">
+        </select>
+        <br/>
+        video: <select id="videoSelect">
+        </select>
+        <br />
+        <button id='startAudioButton' class='hidden' onclick="rc.produce(RoomClient.mediaType.audio, audioSelect.value)">audio</button>
+        <button id='stopAudioButton' class='hidden' onclick="rc.closeProducer(RoomClient.mediaType.audio)">close
+            audio</button>
+        <button id='startVideoButton' class='hidden' onclick="rc.produce(RoomClient.mediaType.video, videoSelect.value)">video</button>
+        <button id='stopVideoButton' class='hidden' onclick="rc.closeProducer(RoomClient.mediaType.video)">close
+            video</button>
+        <button id='startScreenButton' class='hidden' onclick="rc.produce(RoomClient.mediaType.screen)">screen</button>
+        <button id='stopScreenButton' class='hidden' onclick="rc.closeProducer(RoomClient.mediaType.screen)">close
+            screen</button>
+        <br />
+    </div>
 <body onload="createScene()">
+
+
     <canvas id="renderCanvas"></canvas>
+    <div id='videoMedia' class='hidden'>
+    <div id="streams" style="display:none">
+        </div>
+        <div id="remoteAudios"></div>
+    </div>
     <div id="streams" style="display:none">
     </div>
     <script src="js/main.js"></script>
 </body>
+
+<footer>
+    <script src="js/webrtc_index.js"></script>
+</footer>
+
 </html>

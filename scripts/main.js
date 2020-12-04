@@ -9,6 +9,7 @@ var p = undefined;
 var userCamera;
 var userLHand;
 var userRHand;
+var webRTCStreamer = undefined;
 
 // TEMP: For debugging
 var skeleton;
@@ -50,15 +51,34 @@ async function createScene(callback) {
 	// Setup scene
 	scene = new BABYLON.Scene(engine);
 	xr = await scene.createDefaultXRExperienceAsync();
-	xrHelper = new BABYLON.VRExperienceHelper(scene)
+	xrHelper = new BABYLON.VRExperienceHelper(scene);
 
-	// Set cursor options
-	if (true || 'no controllers exist / is phone VR') {
+	// Get User objects
+	userCamera = scene.cameras.filter(c=>c.name==="deviceOrientationVRHelper")[0];
+	console.log("User has", Object.keys(userCamera.inputs.attached), "input devices");
+	userLHand = undefined;
+	userRHand = undefined;
 
-		xrHelper.setLaserColor(new BABYLON.Color3(1, 0, 0));
-		xrHelper.setGazeColor(new BABYLON.Color3(0, 1, 0));
-		xrHelper.enableInteractions()
-	}
+	// Control VR state
+	xrHelper.setLaserColor(new BABYLON.Color3(1, 0, 0));
+	xrHelper.setGazeColor(new BABYLON.Color3(0, 1, 0));
+	xrHelper.enableInteractions();
+	
+	xrHelper.onEnteringVR.add(() => {
+		// Look for controllers
+		xrHelper.onControllerMeshLoadedObservable.add(() => {
+			// Get controllers
+			console.log("Got controllers");
+			userLHand = xrHelper._leftController;
+			userRHand = xrHelper._rightController;
+		})
+	})
+
+	xrHelper.onExitingVR.add(() => {
+		// Remove Controllers
+		userLHand = undefined;
+		userRHand = undefined;
+	});
 
 	// Set Ground Plane
 	let ground = BABYLON.MeshBuilder.CreateGround("ground", {
@@ -203,27 +223,23 @@ window.onload = function () {
 
 		// Establish Websocket connection and load ApplicationState
 		EstablishWebsocketConnection((conn) => {
+			console.log("Connection established", conn);
+
 			// TEMP: Addd sample streamer
-			addStreamer("assets/samplevid.mp4", scene);
+			// addStreamer("assets/samplevid.mp4", scene);
 			
-			// TEMP: Add sample avatar
-			sample_avatar = "/assets/avatars/d41e5dc3-edd2-44b0-91a8-0b1c75c2ac43.glb";
-			sample_avatar = "/assets/avatars/Dude/Dude.babylon";
-			let original_link = "https://d1a370nemizbjq.cloudfront.net/d41e5dc3-edd2-44b0-91a8-0b1c75c2ac43.glb";
-			addAvatar("/assets/samplevid.mp4", sample_avatar);
-		});
+			// // TEMP: Add sample avatar
+			// sample_avatar = "/assets/avatars/d41e5dc3-edd2-44b0-91a8-0b1c75c2ac43.glb";
+			// sample_avatar = "/assets/avatars/Dude/Dude.babylon";
+			// let original_link = "https://d1a370nemizbjq.cloudfront.net/d41e5dc3-edd2-44b0-91a8-0b1c75c2ac43.glb";
+			// addAvatar("/assets/samplevid.mp4", sample_avatar);
 
-		// Get User objects
-		userCamera = scene.cameras.filter(c=>c.name==="deviceOrientationVRHelper")[0];
-		console.log("User has", Object.keys(userCamera.inputs.attached), "input devices");
-		userLHand = undefined;
-		userRHand = undefined;
-
-		// Send user pose
-		scene.onBeforeRenderObservable.add(function() {
+			// Send user pose
 			sendPose();
-		})
 
+			// Connect to WebRTC
+			joinRoom(ApplicationState.id, ApplicationState.room);
+		});
 	});
 }
 
@@ -407,7 +423,7 @@ function onMeetingJoin(roomid=123) {
 function SetApplicationState(state) {
 	// TODO: remove all of the old stuff
 
-	
+
 	ApplicationState = state;
 
 	// Load Streamers
@@ -422,32 +438,4 @@ function SetApplicationState(state) {
 		default:
 			break;
 	}
-}
-
-
-/*
-=======================================
-		Managing Avatar Poses
-=======================================
-*/
-
-/**
- * Sends the user's headpose to the other connected users.
- * @param {4x4 matrix} transform The transformation matrix of the head
- */
-var _sendPoseCounter = 0;
-var _sendPoseEvery_x_Frames = 10;
-function sendPose() {
-    if (_sendPoseCounter == _sendPoseEvery_x_Frames) {
-        ws.send(JSON.stringify({
-            type:"POSE",
-            head: userCamera? userCamera.getWorldMatrix().toArray(): null,
-            lhand: userLHand? userLHand.getWorldMatrix().toArray(): null,
-            rhand: userRHand? userRHand.getWorldMatrix().toArray(): null
-        }))
-        _sendPoseCounter = 0;
-    }
-    else {
-        _sendPoseCounter+=1;
-    }
 }

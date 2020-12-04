@@ -1,4 +1,5 @@
 var ws
+let temp_ids = []
 
 /**
  * Connects to the server. Callback is never run if an error occurs.
@@ -16,8 +17,19 @@ function EstablishWebsocketConnection(callback) {
     }
 
     ws.onmessage = function (rawMessage) {
-        msg = JSON.parse(rawMessage.data);
-        type = msg.type.toUpperCase();
+        let msg = JSON.parse(rawMessage.data);
+        let type = msg.type.toUpperCase();
+        let cppair
+        if ('id' in msg) {
+            cppair = GetCPPair(msg.id).pair;
+            if (temp_ids.indexOf(msg.id) === -1) {
+                temp_ids.push(msg.id);
+            }
+        }
+
+        if (cppair) {
+            console.log("Got message from known webrtc peer", cppair);
+        }
 
         switch(type) {
             case "VERIFIED":
@@ -25,6 +37,25 @@ function EstablishWebsocketConnection(callback) {
                 SetApplicationState(msg.state);
                 ApplicationState = msg.state;
                 callback(ws);
+                break;
+            case "RTC SOCKET ID":
+                // Update CPPairs
+                cppair = GetCPPair(null, null, msg.socketid).pair;
+                // If it's a new connection, generate pair and announce your own id
+                if (!cppair) {
+                    cppair = generateCPPair(undefined, undefined, msg.socketid, msg.wsid, true);
+                    console.log("Announcing Ids");
+                    announceIds();
+
+                    // TODO: Create Streamer
+                }
+                console.log("Got socket id from peer", cppair, msg);
+                break;
+            case "POSE":
+                // console.log(msg.id, "sent pose", msg.head);
+                break;
+            case "REFRESH":
+                window.location.reload();
                 break;
             default:
                 console.error("[Websocket] Unknown message received from server of", type, "type. Contents:", msg);

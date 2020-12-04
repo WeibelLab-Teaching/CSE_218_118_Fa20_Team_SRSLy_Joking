@@ -3,6 +3,7 @@ class Streamer {
         this.name = "video" + ApplicationState.streamers.length;
         this.src = video;
         this.scene = scene;
+        this.xr = avatarUri? true: false;
 
 
         // Calculate Mesh position if needed (will set position after loading mesh - the light source needs this variable)
@@ -13,7 +14,7 @@ class Streamer {
             position = new BABYLON.Vector3(Math.random(-.5, .5), 2, Math.random(0.5, 1));
         }
 
-        if (avatarUri) {
+        if (this.xr) {
             this.avatar = avatarUri.split(/(?<=\/)(?!.*\/.*.(glb|babylon|gltf))/).filter(sec=>sec!==undefined);
             console.log("Attempting to import mesh", this.avatar);
 
