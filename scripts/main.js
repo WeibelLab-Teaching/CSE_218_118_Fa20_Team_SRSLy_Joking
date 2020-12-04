@@ -212,6 +212,18 @@ window.onload = function () {
 			let original_link = "https://d1a370nemizbjq.cloudfront.net/d41e5dc3-edd2-44b0-91a8-0b1c75c2ac43.glb";
 			addAvatar("/assets/samplevid.mp4", sample_avatar);
 		});
+
+		// Get User objects
+		userCamera = scene.cameras.filter(c=>c.name==="deviceOrientationVRHelper")[0];
+		console.log("User has", Object.keys(userCamera.inputs.attached), "input devices");
+		userLHand = undefined;
+		userRHand = undefined;
+
+		// Send user pose
+		scene.onBeforeRenderObservable.add(function() {
+			sendPose();
+		})
+
 	});
 }
 
@@ -393,6 +405,9 @@ function onMeetingJoin(roomid=123) {
 
 
 function SetApplicationState(state) {
+	// TODO: remove all of the old stuff
+
+	
 	ApplicationState = state;
 
 	// Load Streamers
@@ -407,4 +422,32 @@ function SetApplicationState(state) {
 		default:
 			break;
 	}
+}
+
+
+/*
+=======================================
+		Managing Avatar Poses
+=======================================
+*/
+
+/**
+ * Sends the user's headpose to the other connected users.
+ * @param {4x4 matrix} transform The transformation matrix of the head
+ */
+var _sendPoseCounter = 0;
+var _sendPoseEvery_x_Frames = 10;
+function sendPose() {
+    if (_sendPoseCounter == _sendPoseEvery_x_Frames) {
+        ws.send(JSON.stringify({
+            type:"POSE",
+            head: userCamera? userCamera.getWorldMatrix().toArray(): null,
+            lhand: userLHand? userLHand.getWorldMatrix().toArray(): null,
+            rhand: userRHand? userRHand.getWorldMatrix().toArray(): null
+        }))
+        _sendPoseCounter = 0;
+    }
+    else {
+        _sendPoseCounter+=1;
+    }
 }

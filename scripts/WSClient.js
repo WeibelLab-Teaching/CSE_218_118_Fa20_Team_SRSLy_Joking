@@ -35,21 +35,16 @@ function EstablishWebsocketConnection(callback) {
     ws.onerror = function(error) {
         console.error("[Websocket] error", error);
     }
-}
 
+    ws.onclose = function() {
+        console.warn("Disconnected from server. Reconnecting in 5 seconds...");
+        setTimeout(function() {
+            // wait 5 seconds and reconnect
+            console.log("Reconnectiong...");
+            EstablishWebsocketConnection(callback);
 
-/**
- * Sends the user's headpose to the other connected users.
- * @param {4x4 matrix} transform The transformation matrix of the head
- */
-function sendHeadPose(transform) {
-    // Get Head Pose
-    camera = scene.cameras.filter(c=>c.name==="deviceOrientationVRHelper");
-
-    ws.send(JSON.stringify({
-        type:"HEADPOSE",
-        T: transform
-    }))
+        }, 5000);
+    }
 }
 
 function pushAppState() {

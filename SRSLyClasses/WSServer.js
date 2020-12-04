@@ -54,15 +54,15 @@ wss.on('connection', function(conn) {
             let client_state = getClientState(conn.SRSLy_id);
             switch(type) {
 
-                case "HEADPOSE":
-                    // update client state
-                    AppState.clients[client_index].headpose = msg.T;
+                case "POSE":
+                    // update client's headpose
+                    AppState.clients[client_index].headpose = msg.head;
                     // broadcast pose
-                    bcast(JSON.stringify({
-                        type:"HEADPOSE",
-                        id: conn.SRSLy_id,
-                        T: msg.T
-                    }))
+                    msg["id"] = conn.SRSLy_id;
+                    bcast(conn, JSON.stringify(msg));
+                    console.log("Got user", client_index,"pose");
+
+                    // TODO: accumulate poses from all clients and send as one packet
                     break;
                 case "APPSTATE":
                     AppState.clients[client_index] = msg.content;
@@ -144,6 +144,7 @@ function verifyClient(conn, setupMessage) {
 
             // Add to list of known connections
             connections.push(conn);
+            AppState.clients.push(DEFAULT_CLIENT_STATE);
             console.log("[Websocket] Verified client", id);
             return;
         }
@@ -159,7 +160,7 @@ function getClientState(id) {
 }
 
 function getClientIndex(id) {
-    return AppState.clients.map((c) => {return c.id}).indexOf(id);
+    return connections.map(c => c.SRSLy_id).indexOf(id);
 }
 
 module.exports = {
