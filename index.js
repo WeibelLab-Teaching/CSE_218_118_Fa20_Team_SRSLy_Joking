@@ -52,7 +52,7 @@ app.use("/babylon.js", express.static(__dirname+"/node_modules/babylonjs/babylon
 app.use("/assets", express.static(__dirname+"/assets/"));
 app.use("/math.js", express.static(__dirname+"/node_modules/mathjs/lib/browser/math.js"))
 app.use("/favicon.ico", express.static(__dirname+"/assets/favicon.ico"));
-
+app.use("/babylon-vrm.js", express.static(__dirname+"/node_modules/babylon-vrm-loader/dist/index.js"));
 /*
 =====================================
         RUN SERVER

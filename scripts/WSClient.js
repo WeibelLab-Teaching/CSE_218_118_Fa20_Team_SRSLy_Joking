@@ -43,6 +43,9 @@ function EstablishWebsocketConnection(callback) {
  * @param {4x4 matrix} transform The transformation matrix of the head
  */
 function sendHeadPose(transform) {
+    // Get Head Pose
+    camera = scene.cameras.filter(c=>c.name==="deviceOrientationVRHelper");
+
     ws.send(JSON.stringify({
         type:"HEADPOSE",
         T: transform

@@ -6,6 +6,17 @@ var xr = undefined;
 var xrHelper = undefined;
 var treeMesh = undefined;
 var p = undefined;
+var userCamera;
+var userLHand;
+var userRHand;
+
+// TEMP: For debugging
+var skeleton;
+var mesh;
+setTimeout(() => {
+	skeleton = ApplicationState.streamers[1].skeleton;
+	mesh = ApplicationState.streamers[1].mesh;
+}, 2000);
 
 /**
  * Add features to the ApplicationState variable as you desire
@@ -59,12 +70,9 @@ async function createScene(callback) {
 	xrHelper.enableTeleportation({
 		floorMeshName: "ground"
 	});
-	// give ambient light coming up from ground
-	let ambientlight = new BABYLON.HemisphericLight("light0", new BABYLON.Vector3(0, 1, 0), scene);
 
 	// Set Sun
-	let light = new BABYLON.DirectionalLight("light1", new BABYLON.Vector3(0, -1, 0), scene);
-	//light.intensity = 30;
+	let light = new BABYLON.HemisphericLight("sun", new BABYLON.Vector3(0, 1, 0), scene);
 
 
 	// Set UI Control panel
@@ -199,9 +207,11 @@ window.onload = function () {
 			addStreamer("assets/samplevid.mp4", scene);
 			
 			// TEMP: Add sample avatar
-			sample_avatar = "https://d1a370nemizbjq.cloudfront.net/d41e5dc3-edd2-44b0-91a8-0b1c75c2ac43.glb";
-			// addAvatar("assets/samplevid.mp4", sample_avatar)
-		})
+			sample_avatar = "/assets/avatars/d41e5dc3-edd2-44b0-91a8-0b1c75c2ac43.glb";
+			sample_avatar = "/assets/avatars/Dude/Dude.babylon";
+			let original_link = "https://d1a370nemizbjq.cloudfront.net/d41e5dc3-edd2-44b0-91a8-0b1c75c2ac43.glb";
+			addAvatar("/assets/samplevid.mp4", sample_avatar);
+		});
 	});
 }
 
@@ -228,7 +238,7 @@ function addStreamer(video) {
 	}
 }
 
-function addAvatar(model, uri) {
+function addAvatar(uri, model) {
 	let streamsContainer = document.getElementById("streams");
 	let video = document.createElement("video");
 	video.setAttribute("src", uri);
@@ -321,7 +331,6 @@ function spawnTrees(numberToSpawn = 15) {
 				let instance = treeMesh[j].createInstance(`Tree${i}_part${j}`);
 				instance.locallyTranslate(pos);
 			}
-			console.log(`Spawned Tree${i} at (${pos.x}, ${pos.y}, ${pos.z})`);
 		}
 	}
 
