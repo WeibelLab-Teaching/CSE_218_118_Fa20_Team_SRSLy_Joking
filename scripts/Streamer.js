@@ -4,6 +4,15 @@ class Streamer {
         this.src = video;
         this.scene = scene;
 
+
+        // Calculate Mesh position if needed (will set position after loading mesh - the light source needs this variable)
+        if (position) {
+            this.mesh.position = position;
+        }
+        else {
+            position = new BABYLON.Vector3(Math.random(-.5, .5), 2, Math.random(0.5, 1));
+        }
+
         if (avatarUri) {
             this.avatar = avatarUri;
             this.mesh = BABYLON.SceneLoader.ImportMeshAsync(this.name, this.modelUri, scene)
@@ -21,28 +30,18 @@ class Streamer {
             // Scale to appropriate size
             this.mesh.scaling.y = height;
             this.mesh.scaling.x = this.mesh.scaling.y * resolution[0] / resolution[1]; // set aspect ratio
+
+            // Make sure it's always illuminated
+            this.light = new BABYLON.PointLight(name + "PlaneLight", position.add(new BABYLON.Vector3(0, 0, .2)), scene);
+            this.light.parent = this.mesh;
         }
 
-        // Position Mesh
-        if (position) {
-            this.mesh.position = position;
-        }
-        else {
-            let pos = new BABYLON.Vector3(Math.random(-.5, .5), 2, Math.random(0.5, 1));
-            this.mesh.position = pos;
-        }
-
-        // Make sure it's always illuminated
-        this.light = new BABYLON.PointLight(name + "PlaneLight", this.mesh.position.add(new BABYLON.Vector3(0, 0, .2)), scene);
-        this.light.parent = this.mesh;
-
-        // Billboard
-        this.scene.onBeforeRenderObservable.add(function () {
-            this.mesh.lookAt(this.scene.activeCamera.position, Math.PI)
-        }.bind(this));
+        // Place loaded mesh
+        this.mesh.position = position;
 
         // Setup mesh for following
-        this.follower = new Follower(this.mesh, p /*scene.activeCamera*/ );
+        this.follower = new Follower(this.mesh, p, scene);
+        this.follower.billboard(true);
     }
 
     destructor() {

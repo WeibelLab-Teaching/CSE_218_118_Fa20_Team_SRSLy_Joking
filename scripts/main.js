@@ -200,7 +200,7 @@ window.onload = function () {
 			
 			// TEMP: Add sample avatar
 			sample_avatar = "https://d1a370nemizbjq.cloudfront.net/d41e5dc3-edd2-44b0-91a8-0b1c75c2ac43.glb";
-			addAvatar("assets/samplevid.mp4", sample_avatar)
+			// addAvatar("assets/samplevid.mp4", sample_avatar)
 		})
 	});
 }
@@ -321,22 +321,25 @@ function spawnTrees(numberToSpawn = 15) {
 				let instance = treeMesh[j].createInstance(`Tree${i}_part${j}`);
 				instance.locallyTranslate(pos);
 			}
-			//console.log(`Spawned Tree${i} at (${pos.x}, ${pos.y}, ${pos.z})`);
+			console.log(`Spawned Tree${i} at (${pos.x}, ${pos.y}, ${pos.z})`);
 		}
 	}
 
 
 	if (!treeMesh) {
-		BABYLON.SceneLoader.ImportMesh("", "/assets/", "Tree2.glb", scene, function (meshes) {
-			console.log("Loaded at", meshes.map((m) => {
-				return m.position
+		BABYLON.SceneLoader.ImportMesh(null, "/assets/", "Tree2.glb", scene, function (meshes) {
+			console.log("Loaded Tree model at", meshes.map((m) => {
+				return m.name + " at " + m.position
 			}));
 
-			treeMesh = meshes;
+			console.log(meshes);
+
+			treeMesh = meshes.filter(mesh => {return mesh.name !== "__root__"});
 			let pos = new BABYLON.Vector3(Math.random() * 4 * numberToSpawn - 2 * numberToSpawn, 0, Math.random() * 4 * numberToSpawn - 2 * numberToSpawn);
 			for (mesh of meshes) {
 				mesh.locallyTranslate(pos);
 			}
+			console.log("Positioned tree model at", pos);
 			spawn(numberToSpawn - 1) // -1 because we just made one by importing the mesh
 		});
 
@@ -355,14 +358,13 @@ function spawnTrees(numberToSpawn = 15) {
  * @param {array} point the point to check as an array [x, y, z] eg: [1, 2, 3]
  */
 function isInPlayArea(point) {
-
 	let inside = false;
-	for (let i = 0, j = ApplicationState.playArea.length - 1; i < ApplicationState.playArea.length; j = i++) {
-		let xi = ApplicationState.playArea[i][0];
-		let zi = ApplicationState.playArea[i][2];
+	for (let i = 0, j = ApplicationState.play_area.length - 1; i < ApplicationState.play_area.length; j = i++) {
+		let xi = ApplicationState.play_area[i][0];
+		let zi = ApplicationState.play_area[i][2];
 
-		let xj = ApplicationState.playArea[j][0];
-		let zj = ApplicationState.playArea[j][2];
+		let xj = ApplicationState.play_area[j][0];
+		let zj = ApplicationState.play_area[j][2];
 
 		let intersect = ((zi > point[2]) != (zj > point[2])) &&
 			(point[0] < (xj - xi) * (point[2] - zi) / (zj - zi) + xi);

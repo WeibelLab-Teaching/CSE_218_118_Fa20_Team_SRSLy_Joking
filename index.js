@@ -59,8 +59,8 @@ app.use("/favicon.ico", express.static(__dirname+"/assets/favicon.ico"));
 =====================================
 */
 var httpsServer = https.createServer({ // need https for webcam
-    key: fs.readFileSync(__dirname+'/cert/server.key'),
-    cert: fs.readFileSync(__dirname+'/cert/server.cert')
+    key: fs.readFileSync(__dirname+'/cert/tlsharkey.com.key'),
+    cert: fs.readFileSync(__dirname+'/cert/tlsharkey.com.crt')
 }, app);
 
 httpsServer.listen(3000, (err) => {
