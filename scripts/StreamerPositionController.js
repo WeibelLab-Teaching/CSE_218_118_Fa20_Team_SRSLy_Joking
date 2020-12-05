@@ -2,11 +2,11 @@ class StreamerPositionController {
     constructor() {
 
         this.positions = [
-            new BABYLON.Vector3(-1, 2, 0.2),
-            new BABYLON.Vector3(-0.7, 2, 0.7),
-            new BABYLON.Vector3(0, 2, 1),
-            new BABYLON.Vector3(0.7, 2, 0.7),
-            new BABYLON.Vector3(1, 2, 0.2)
+            new BABYLON.Vector3(-1, 1.5, 0.2),
+            new BABYLON.Vector3(-0.7, 1.5, 0.7),
+            new BABYLON.Vector3(0, 1.5, 1),
+            new BABYLON.Vector3(0.7, 1.5, 0.7),
+            new BABYLON.Vector3(1, 1.5, 0.2)
         ]
 
         this.videosInController = [
@@ -17,9 +17,12 @@ class StreamerPositionController {
             null
 
         ]
+
+        this.countPerRow = 5
     }
 
     getNewPosition(currVideo) {
+        let countPerRow = this.countPerRow
         let positionCount = 0
         for (let video of this.videosInController) {
             if (video == null) {
@@ -28,17 +31,21 @@ class StreamerPositionController {
             }
             positionCount++
         }
+        console.log(this.videosInController)
+        console.log(positionCount)
 
         // Only if we run out of positions
-        if(positionCount > this.positions.length) {
+        if(positionCount >= this.positions.length) {
             // Create a new row of positions if we ran out (creates the positions in order of left to right)
-            for(i = 4; i >= 0; i--) {
-                this.positions.push(new BABYLON.Vector3(this.positions[positionCount - i].x, this.positions[positionCount - i].y + 0.5, this.positions[positionCount - i].z))
-
+            var i;
+            for(i = countPerRow; i > 0; i--) {
+                this.positions.push(new BABYLON.Vector3(this.positions[positionCount - i].x, this.positions[positionCount - i].y + 0.25, this.positions[positionCount - i].z))
+                console.log(this.positions)
             }
 
             // create one more row of  possible video feeds
-            for(i = 0; i < 5; i++) {
+            for(i = 0; i < countPerRow; i++) {
+                console.log(this.videosInController)
                 this.videosInController.push(null)
             }
         }

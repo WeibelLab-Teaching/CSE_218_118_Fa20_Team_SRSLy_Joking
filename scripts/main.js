@@ -256,8 +256,10 @@ function removeStreamer(uri_or_video_elm) {
 
 function getStreamerPosition(video) {
 	// return a random vector if it does not exist.
-	let returnPosition = new BABYLON.Vector3(Math.random(-.5, .5), 2, Math.random(0.5, 1));
-	returnPosition = positionController.getNewPosition(video);
+	let returnPosition = positionController.getNewPosition(video);
+	if (returnPosition == null) {
+		returnPosition = new BABYLON.Vector3(Math.random(-.5, .5), 2, Math.random(0.5, 1));
+	}
 	return returnPosition;
 }
 
