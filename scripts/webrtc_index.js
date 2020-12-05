@@ -93,6 +93,14 @@ function addListeners() {
     reveal(login)
     hide(videoMedia)
   })
+
+  // Let other peers know when you leave
+  rc.on(RoomClient.EVENTS.exitRoom, () => {
+    ws.send(JSON.stringify({
+      type: "LEFT ROOM",
+      id: ApplicationState.id
+    }))
+  })
 }
 
 // Load mediaDevice options

@@ -14,7 +14,7 @@ function EstablishWebsocketConnection(callback) {
     ws = new WebSocket(protocol + "//" + window.location.hostname + ":8000");
 
     ws.onopen = function() {
-        console.log("[Websocket] Established connection");
+        // console.log("[Websocket] Established connection");
         ws.send(JSON.stringify({
             "type": "SETUP",
             "key": "SRSLy bro, just let me in. I got stuff I need to send."
@@ -29,12 +29,18 @@ function EstablishWebsocketConnection(callback) {
 
         switch(type) {
             case "VERIFIED":
-                console.log("[Websocket] Verified", msg);
+                /* When the server confirms that the client has access to server 
+                passes an app state with an id in it. */
+
+                // console.log("[Websocket] Verified", msg);
                 SetApplicationState(msg.state);
                 ApplicationState = msg.state;
                 callback(ws);
                 break;
             case "RTC SOCKET ID":
+                /* When a webrtc client sends its webrtc socket id
+                This lets us pair webrtc data with websocket data */
+
                 // Update CPPairs
                 pcpair = PCPair.get(null, null, msg.socketid, msg.wsid).pair;
                 let rtc_socket_id_isNewPCPair = false;
@@ -56,7 +62,7 @@ function EstablishWebsocketConnection(callback) {
                 }
 
                 // Build a streamer if needed
-                if ((!streamer && !rtc_socket_id_isNewPCPair) || streamer==="reset") {
+                if ((!streamer && rtc_socket_id_isNewPCPair) || streamer==="reset") {
                     if (msg.xr) {
                         streamer = new AvatarStreamer(scene, p, pcpair, undefined, msg.avatarModel);
                         console.log("[Websocket] created avatar streamer", streamer);
@@ -69,12 +75,20 @@ function EstablishWebsocketConnection(callback) {
                     
                 break;
             case "POSE":
+                /* User pose sent for updating avatars */
+
                 // console.log(msg.id, "sent pose", msg.head);
                 break;
             case "REFRESH":
+                /* Unused */
                 window.location.reload();
                 break;
+            case "LEFT ROOM":
+                /* When a peer leaves a webrtc room */
             case "PEER DISCONNECT":
+                /* When a peer loses connection to the server,
+                presumably because they closed their browser */
+
                 // destroy the pair (automatically destroys attached streamers)
                 PCPair.destroy(null, null, null, msg.id);
                 break;

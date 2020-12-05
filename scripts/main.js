@@ -208,7 +208,6 @@ window.onload = function () {
 
 		// Establish Websocket connection and load ApplicationState
 		EstablishWebsocketConnection((conn) => {
-			console.log("Connection established", conn);
 			// Send user pose
 			sendPose();
 			// Connect to WebRTC
@@ -300,9 +299,9 @@ function spawnTrees(numberToSpawn = 15) {
 
 	if (!treeMesh) {
 		BABYLON.SceneLoader.ImportMesh(null, "/assets/", "Tree2.glb", scene, function (meshes) {
-			console.log("Loaded Tree model at", meshes.map((m) => {
-				return m.name + " at " + m.position
-			}));
+			// console.log("Loaded Tree model at", meshes.map((m) => {
+			// 	return m.name + " at " + m.position
+			// }));
 
 			console.log(meshes);
 

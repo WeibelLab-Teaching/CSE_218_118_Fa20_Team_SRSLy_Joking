@@ -68,18 +68,15 @@ wss.on('connection', function(conn) {
                 case "APPSTATE":
                     AppState.clients[client_index] = msg.content;
                     break;
-                case "RTC SOCKET ID":
-                    bcast(JSON.stringify(msg), conn);
-                    break;
-                case "BCAST":
-                case "BROADCAST":
-                    bcast(rawMessage);
-                    break;
                 case "SETUP":
                     verifyClient(conn, msg);
                     break;
+                case "BCAST":
+                case "BROADCAST":
+                case "RTC SOCKET ID":
                 default:
-                    console.error("[WebSocket] Unknown message type", type, "contents:", msg);
+                    bcast(rawMessage, conn);
+                    console.log("[WebSocket]", type, "message was forwarded to other clients");
                     break;
             }
         }
