@@ -37,29 +37,33 @@ function EstablishWebsocketConnection(callback) {
             case "RTC SOCKET ID":
                 // Update CPPairs
                 pcpair = PCPair.get(null, null, msg.socketid, msg.wsid).pair;
+                let rtc_socket_id_isNewPCPair = false;
 
                 // If it's a new connection, generate pair and announce your own id
                 if (!pcpair) {
                     pcpair = new PCPair(undefined, undefined, msg.socketid, msg.wsid, msg.xr);
                     PCPair.announceIds();
+                    rtc_socket_id_isNewPCPair = true;
                 }
 
                 // Setup or update streamer
-                streamer = pcpair.getStreamer();
+                streamer = pcpair.streamer;
 
                 // Destroy streamer if its status has changed
                 if (streamer && msg.xr !== streamer.xr) {
                     streamer.destructor();
-                    streamer = undefined;
+                    streamer = "reset";
                 }
 
                 // Build a streamer if needed
-                if (!streamer) {
+                if ((!streamer && !rtc_socket_id_isNewPCPair) || streamer==="reset") {
                     if (msg.xr) {
-                        steamer = new AvatarStreamer(scene, p, pcpair);
+                        streamer = new AvatarStreamer(scene, p, pcpair, undefined, msg.avatarModel);
+                        console.log("[Websocket] created avatar streamer", streamer);
                     }
                     else {
                         streamer = new VideoStreamer(scene, p, pcpair);
+                        console.log("[Websocket] created video streamer", streamer);
                     }
                 }
                     
@@ -69,6 +73,10 @@ function EstablishWebsocketConnection(callback) {
                 break;
             case "REFRESH":
                 window.location.reload();
+                break;
+            case "PEER DISCONNECT":
+                // destroy the pair (automatically destroys attached streamers)
+                PCPair.destroy(null, null, null, msg.id);
                 break;
             default:
                 console.error("[Websocket] Unknown message received from server of", type, "type. Contents:", msg);

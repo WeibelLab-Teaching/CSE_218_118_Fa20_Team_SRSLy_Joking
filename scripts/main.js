@@ -75,9 +75,17 @@ async function createScene(callback) {
 		});
 
 		// Set as xr user
-		ApplicationState.xr = true;
-		PCPair.announceIds();
-		pushAppState();
+		if ('avatarModel' in ApplicationState) {
+			ApplicationState.xr = true;
+			PCPair.announceIds();
+			pushAppState();
+		}
+		chooseAvatar((uri) => {
+			ApplicationState["avatarModel"] = uri;
+			ApplicationState.xr = true;
+			PCPair.announceIds();
+			pushAppState();
+		})
 	})
 
 	xrHelper.onExitingVR.add(() => {
@@ -162,40 +170,6 @@ async function createScene(callback) {
 	connectText.fontSize = 30;
 	joinButton.content = connectText;
 
-
-
-
-	// // TEMP: Add a button for testing
-	// var testPanel = new BABYLON.GUI.StackPanel3D();
-	// testPanel.margin = 0.02;
-	// guiManager.addControl(testPanel);
-	// testPanel.node.scaling = new BABYLON.Vector3(0.5, 0.5, 0.5);
-	// testPanel.position.z = 1;
-	// testPanel.position.y = 1;
-	// testPanel.node.rotation = new BABYLON.Vector3(Math.PI/3, 0, 0);
-
-	// let testButton = new BABYLON.GUI.HolographicButton("Test Button");
-	// testPanel.addControl(testButton);
-	// testButton.onPointerUpObservable.add(() => {
-	// 	let advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
-	// 	let text = new BABYLON.GUI.TextBlock();
-	// 	text.text = "Clicked";
-	// 	text.color = "black";
-	// 	text.fontSize = 40;
-	// 	advancedTexture.addControl(text);
-	// 	setTimeout(() => {
-	// 		advancedTexture.dispose()
-	// 	}, 2000)
-	// });
-
-	// //// add text
-	// // follow
-	// let testButtonText = new BABYLON.GUI.TextBlock();
-	// testButtonText.text = "Test Button";
-	// testButtonText.color = "white";
-	// testButtonText.fontSize = 30;
-	// testButton.content = testButtonText;
-
 	if (callback) {
 		callback(scene);
 	}
@@ -241,45 +215,6 @@ window.onload = function () {
 			joinRoom(ApplicationState.id, ApplicationState.room);
 		});
 	});
-}
-
-/**
- * Adds a video stream to the scene
- * TODO: connect to WebRTC @eric
- * @param {string} uri the path to the video to stream (eg: assets/samplevid.mp4 or https://path.to.webrtc/uuid)
- */
-function addStreamer(video) {
-	// Create <video> tag in html
-	// TODO: hook up <video> tag to WebRTC
-	// let streamsContainer = document.getElementById("streams");
-	// let video = document.createElement("video");
-	// video.setAttribute("src", uri);
-	// streamsContainer.appendChild(video);
-
-	// Add to app state
-	let streamer = new Streamer(video, scene);
-	ApplicationState.streamers.push(streamer);
-
-	// Set to follow
-	if (ApplicationState.following) {
-		streamer.follower.enable();
-	}
-}
-
-function addAvatar(uri, model) {
-	let streamsContainer = document.getElementById("streams");
-	let video = document.createElement("video");
-	video.setAttribute("src", uri);
-	streamsContainer.appendChild(video);
-
-	// Add to app state
-	let streamer = new Streamer(video, scene, null, null, null, model);
-	ApplicationState.streamers.push(streamer);
-
-	// Set to follow
-	if (ApplicationState.following) {
-		streamer.follower.enable();
-	}
 }
 
 function removeStreamer(uri_or_video_elm) {

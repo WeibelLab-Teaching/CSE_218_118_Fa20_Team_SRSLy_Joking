@@ -17,6 +17,9 @@ class AvatarStreamer extends Streamer {
             model.setParent(this.mesh);
             this.skeleton = skeletons[0];
 
+            // Add to list of disposable elements
+            this._disposables = this._disposables.concat(meshes.concat(skeletons));
+
             // Scale waaaay down
             model.scaling = new BABYLON.Vector3(0.03, 0.03, 0.03);
             scene.beginAnimation(this.skeleton, 0, 100, 1, true);

@@ -16,14 +16,10 @@ class VideoStreamer extends Streamer {
                 // Create Mesh
                 let video = BABYLON.Mesh.CreatePlane(this.name + "Plane", 1, scene);
                 video.parent = this.mesh;
+                this._disposables.push(video);
                 // video.setPositionWithLocalVector(BABYLON.Vector3(0, 0, 0));
 
                 // Scale to appropriate size
-                // video.scaling = BABLYON.Vector3(
-                //         height * resolution[0]/resolution[1],
-                //         height,
-                //         1
-                // )
                 video.scaling.y = height;
                 video.scaling.x = height * resolution[0] / resolution[1]; // set aspect ratio
 
@@ -32,7 +28,6 @@ class VideoStreamer extends Streamer {
                 let texture = new BABYLON.VideoTexture(this.name, "/assets/samplevid.mp4", scene, true, false);
                 material.diffuseTexture = texture;
                 video.material = material;
-
         }
 
         serialize() {

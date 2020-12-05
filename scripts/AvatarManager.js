@@ -21,3 +21,8 @@ function sendPose() {
 
 	setTimeout(sendPose, 1000); // Change the delay to increase or decrease pose update frequency
 }
+
+function chooseAvatar(callback) {
+	let uri = prompt("Select your avatar (input the uri)", "/assets/avatars/Dude/Dude.babylon");
+	callback(uri);
+}

@@ -24,6 +24,7 @@ class PCPair {
     socket;
     websocket;
     xr;
+    _onDestroy;
 
     constructor(pid=undefined, cid=undefined, sid=undefined, wsid=undefined, xr=false) {
         this.producers = [],
@@ -31,6 +32,7 @@ class PCPair {
         this.consumers = [],
         this.websocket = wsid,
         this.xr = xr
+        this._onDestroy = [];
         
         if (pid) {
             this.producers.push(pid);
@@ -42,7 +44,7 @@ class PCPair {
         PCPair.Pairs.push(this);
     }
 
-    getDOMElements() {
+    get DOMElements() {
         let elms = [];
         for (let consumer of this.consumers) {
             elms.push(document.getElementById(consumer));
@@ -50,13 +52,17 @@ class PCPair {
         return elms;
     }
 
-    getStreamer() {
+    get streamer() {
         for (let streamer of Streamer.streamers) {
-            if (streamer.PCPair === this) {
+            if (streamer.pcpair === this) {
                 return streamer
             }
         }
         return null;
+    }
+
+    addDestructorCallback(callback) {
+        this._onDestroy.push(callback);
     }
 
     serialize() {
@@ -79,6 +85,13 @@ class PCPair {
         return pair;
     }
 
+    destructor() {
+        console.log("[PCPair] destroying pcpair with websocket id " + this.websocket);
+        for (let callback of this._onDestroy) {
+            callback(this);
+        }
+    }
+
     /**
      * Removes a PCPair from list of managed pairs, given an id to match.
      * @param {string | undefined} pid the producer id to be used to identify the PCPair to delete
@@ -90,10 +103,14 @@ class PCPair {
      * @param {string | undefined} wsid the websocket id to be used to identify the PCPair to delete
      * Must provide one of pid, cid, sid, or wsid
      */
-    static destructor(pid=undefined, cid=undefined, sid=undefined, wsid=undefined) {
+    static destroy(pid=undefined, cid=undefined, sid=undefined, wsid=undefined) {
         if (!pid && !cid && !sid && !wsid) {
             throw new Error("Must pass one of pid, cid, side, or wsid into destructor");
         }
+
+        let pair = PCPair.get(pid, cid, sid, wsid).pair;
+        console.log("Destroying", pair);
+        pair.destructor();
 
         if (pid) {
             PCPair.Pairs = PCPair.Pairs.filter(p=>p.prodcuers.indexOf(pid)===-1);
@@ -121,7 +138,8 @@ class PCPair {
             type: "RTC SOCKET ID",
             socketid: rc.socket.id,
             wsid: ApplicationState.id,
-            xr: ApplicationState.xr
+            xr: ApplicationState.xr,
+            avatarModel: ApplicationState.avatarModel
         }
         // console.log("[PCPair] Sending WebRTC Socket ID", data);
         ws.send(JSON.stringify(data))

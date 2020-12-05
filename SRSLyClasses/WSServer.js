@@ -61,7 +61,7 @@ wss.on('connection', function(conn) {
                     AppState.clients[client_index].headpose = msg.head;
                     // broadcast pose
                     msg["id"] = conn.SRSLy_id;
-                    bcast(conn, JSON.stringify(msg));
+                    bcast(JSON.stringify(msg), conn);
 
                     // TODO: accumulate poses from all clients and send as one packet
                     break;
@@ -69,7 +69,7 @@ wss.on('connection', function(conn) {
                     AppState.clients[client_index] = msg.content;
                     break;
                 case "RTC SOCKET ID":
-                    bcast(conn, JSON.stringify(msg));
+                    bcast(JSON.stringify(msg), conn);
                     break;
                 case "BCAST":
                 case "BROADCAST":
@@ -93,6 +93,10 @@ wss.on('connection', function(conn) {
 
     conn.on('close', function() {
         console.log("[Websocket] Connection with", conn.SRSLy_id, "closed");
+        bcast(JSON.stringify({
+            "type": "PEER DISCONNECT",
+            "id": conn.SRSLy_id
+        }));
         connections.splice(connections.indexOf(conn), 1);
     })
 })
@@ -102,9 +106,9 @@ wss.on('connection', function(conn) {
  * @param {object} sender The connection object that send the broadcast request
  * @param {string} rawMessage The message to broadcast
  */
-function bcast(sender, rawMessage) {
+function bcast(rawMessage, sender=null) {
     for (let conn of connections) {
-        if (sender && conn !== sender) {
+        if (!sender || conn !== sender) {
             conn.send(rawMessage);
         }
     }

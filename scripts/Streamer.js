@@ -44,6 +44,8 @@ class Streamer {
         this.audioSrc = undefined;
         this.pcpair = pair;
         this.xr = undefined;
+        this._disposables = [];
+        this._disposables.push(this.mesh);
 
         // Set/Generate Position
         if (!position) {
@@ -59,11 +61,16 @@ class Streamer {
         // Add to list
         console.log("[Streamer] Created Streamer", this.name);
         Streamer.streamers.push(this);
+
+        // Destroy when WebRTC connection is lost
+        this.pcpair.addDestructorCallback(this.destructor.bind(this));
     }
 
     destructor() {
         // Remove mesh from Scene
-        this.mesh.dispose();
+        for (let disposable of this._disposables) {
+            disposable.dispose();
+        }
 
         // Remove DOM elements - let WebRTC handle this?
         // for (let elm of this.pcpair.getDOMElements()) {
