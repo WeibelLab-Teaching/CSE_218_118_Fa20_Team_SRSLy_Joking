@@ -14,10 +14,10 @@ var webRTCStreamer = undefined;
 // TEMP: For debugging
 var skeleton;
 var mesh;
-setTimeout(() => {
-	skeleton = ApplicationState.streamers[1].skeleton;
-	mesh = ApplicationState.streamers[1].mesh;
-}, 2000);
+// setTimeout(() => {
+// 	skeleton = ApplicationState.streamers[1].skeleton;
+// 	mesh = ApplicationState.streamers[1].mesh;
+// }, 2000);
 
 /**
  * Add features to the ApplicationState variable as you desire
@@ -34,7 +34,8 @@ var ApplicationState = {
 		[-1, 0, -1],
 		[-1, 0, 1]
 	],
-	environment: null
+	environment: null,
+	xr: false
 }
 
 // webRTCStreamer: the stream of other peers
@@ -71,13 +72,23 @@ async function createScene(callback) {
 			console.log("Got controllers");
 			userLHand = xrHelper._leftController;
 			userRHand = xrHelper._rightController;
-		})
+		});
+
+		// Set as xr user
+		ApplicationState.xr = true;
+		PCPair.announceIds();
+		pushAppState();
 	})
 
 	xrHelper.onExitingVR.add(() => {
 		// Remove Controllers
 		userLHand = undefined;
 		userRHand = undefined;
+
+		// Set as non-xr user
+		ApplicationState.xr = false;
+		PCPair.announceIds();
+		pushAppState();
 	});
 
 	// Set Ground Plane
@@ -224,19 +235,8 @@ window.onload = function () {
 		// Establish Websocket connection and load ApplicationState
 		EstablishWebsocketConnection((conn) => {
 			console.log("Connection established", conn);
-
-			// TEMP: Addd sample streamer
-			// addStreamer("assets/samplevid.mp4", scene);
-			
-			// // TEMP: Add sample avatar
-			// sample_avatar = "/assets/avatars/d41e5dc3-edd2-44b0-91a8-0b1c75c2ac43.glb";
-			// sample_avatar = "/assets/avatars/Dude/Dude.babylon";
-			// let original_link = "https://d1a370nemizbjq.cloudfront.net/d41e5dc3-edd2-44b0-91a8-0b1c75c2ac43.glb";
-			// addAvatar("/assets/samplevid.mp4", sample_avatar);
-
 			// Send user pose
 			sendPose();
-
 			// Connect to WebRTC
 			joinRoom(ApplicationState.id, ApplicationState.room);
 		});

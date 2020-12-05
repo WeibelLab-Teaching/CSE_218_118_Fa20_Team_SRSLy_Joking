@@ -1,3 +1,4 @@
+
 var ws
 let temp_ids = []
 
@@ -6,7 +7,11 @@ let temp_ids = []
  * @param {function} callback Once verified by the server, run this callback and pass the websocket.
  */
 function EstablishWebsocketConnection(callback) {
-    ws = new WebSocket("ws://" + window.location.hostname + ":8000");
+    let protocol = "ws:";
+    // if (window.location.protocol === "https:") {
+    //     protocol = "wss:"
+    // }
+    ws = new WebSocket(protocol + "//" + window.location.hostname + ":8000");
 
     ws.onopen = function() {
         console.log("[Websocket] Established connection");
@@ -19,17 +24,8 @@ function EstablishWebsocketConnection(callback) {
     ws.onmessage = function (rawMessage) {
         let msg = JSON.parse(rawMessage.data);
         let type = msg.type.toUpperCase();
-        let cppair
-        if ('id' in msg) {
-            cppair = GetCPPair(msg.id).pair;
-            if (temp_ids.indexOf(msg.id) === -1) {
-                temp_ids.push(msg.id);
-            }
-        }
-
-        if (cppair) {
-            console.log("Got message from known webrtc peer", cppair);
-        }
+        let pcpair;
+        let streamer;
 
         switch(type) {
             case "VERIFIED":
@@ -40,16 +36,32 @@ function EstablishWebsocketConnection(callback) {
                 break;
             case "RTC SOCKET ID":
                 // Update CPPairs
-                cppair = GetCPPair(null, null, msg.socketid).pair;
-                // If it's a new connection, generate pair and announce your own id
-                if (!cppair) {
-                    cppair = generateCPPair(undefined, undefined, msg.socketid, msg.wsid, true);
-                    console.log("Announcing Ids");
-                    announceIds();
+                pcpair = PCPair.get(null, null, msg.socketid, msg.wsid).pair;
 
-                    // TODO: Create Streamer
+                // If it's a new connection, generate pair and announce your own id
+                if (!pcpair) {
+                    pcpair = new PCPair(undefined, undefined, msg.socketid, msg.wsid, msg.xr);
+                    PCPair.announceIds();
                 }
-                console.log("Got socket id from peer", cppair, msg);
+
+                // Setup or update streamer
+                // TODO: determine if a streamer needs to be built
+                // TODO: determine if the state has changed between xr and non-xr
+                streamer = pcpair.getStreamer();
+
+                // Build a streamer if needed
+                if (!streamer) {
+                    if (msg.xr) {
+                        steamer = new AvatarStreamer(scene, p, pcpair);
+                    }
+                    else {
+                        streamer = new VideoStreamer(scene, p, pcpair);
+                    }
+                }
+                else {
+                    if (msg.xr !== streamer.xr)
+                }
+                    
                 break;
             case "POSE":
                 // console.log(msg.id, "sent pose", msg.head);

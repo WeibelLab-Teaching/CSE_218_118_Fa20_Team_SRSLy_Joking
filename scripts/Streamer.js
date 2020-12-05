@@ -1,12 +1,50 @@
+/*
+================================================================================
+        Streamer Parent Class
+================================================================================
+Video and Avatar streamers will inherit from this class
+
+Responsible for:
+- managing Audio/Video sources
+- managing WebRTC and Websocket unique identifiers
+- setting billboarding/following behavior
+*/
+
 class Streamer {
-    constructor(video, scene, resolution = [1920, 1080], height = 0.3, position=null, avatarUri=null) {
-        this.name = "video" + ApplicationState.streamers.length;
-        this.src = video;
+
+
+    // ==========	Static Properties	==========
+    static get streamers() {
+        return ApplicationState.streamers;
+    }
+
+    // ==========   Instance Properties	==========
+    name;
+    videoSrc;
+    audioSrc;
+    scene;
+    mesh;
+    follower;
+    pcpair;
+    xr;
+
+    // ==========	Getter and Setter Properties	==========
+    get position() {return this.mesh.position;}
+    set position(value) {this.mesh.position = value;}
+
+
+    // ==========	Creating and Destroying	==========
+    // constructor, destructor, serialize, deserialize
+    constructor(scene, momentum, pair, position=undefined) {
+        this.name = "Streamer" + ApplicationState.streamers.length;
         this.scene = scene;
-        this.xr = avatarUri? true: false;
+        this.mesh = new BABYLON.TransformNode(this.name+"_Mesh", this.scene);
+        this.videoSrc = undefined;
+        this.audioSrc = undefined;
+        this.pcpair = pair;
+        this.xr = undefined;
 
-
-        // Calculate Mesh position if needed (will set position after loading mesh - the light source needs this variable)
+        // Set/Generate Position
         if (position) {
             this.mesh.position = position;
         }
@@ -14,62 +52,28 @@ class Streamer {
             position = new BABYLON.Vector3(Math.random(-.5, .5), 2, Math.random(0.5, 1));
         }
 
-        if (this.xr) {
-            this.avatar = avatarUri.split(/(?<=\/)(?!.*\/.*.(glb|babylon|gltf))/).filter(sec=>sec!==undefined);
-            console.log("Attempting to import mesh", this.avatar);
+        // Setup mesh for following
+        this.follower = new Follower(this.mesh, momentum, scene);
+        this.follower.billboard(true);
 
-            // Import as Mesh
-            BABYLON.SceneLoader.ImportMesh(null, this.avatar[0], this.avatar[1], scene, function (meshes, particleSystems, skeletons) {
-                console.log("Loaded Avatar", meshes.map(m => {return m.name}));
-                this.mesh = meshes[0];
-                this.skeleton = skeletons[0];
-
-                // Scale waaaay down
-                this.mesh.scaling = new BABYLON.Vector3(0.03, 0.03, 0.03);
-                scene.beginAnimation(this.skeleton, 0, 100, 1, true);
-            }.bind(this));
-
-            // Import as scene
-            // BABYLON.SceneLoader.Append(avatarUri, "", scene, function(newScene) {
-            //     console.log("Loaded Avatar as scene", newScene);
-            //     this.mesh = newScene;
-            // }.bind(this));
-        }
-        else {
-            // Create a material from the video
-            let material = new BABYLON.StandardMaterial(this.name + "Mat", scene);
-            let texture = new BABYLON.VideoTexture(this.name, video, scene, true, false);
-            material.diffuseTexture = texture;
-
-            // Create Mesh
-            this.mesh = BABYLON.Mesh.CreatePlane(this.name + "Plane", 1, scene);
-            this.mesh.material = material;
-
-            // Scale to appropriate size
-            this.mesh.scaling.y = height;
-            this.mesh.scaling.x = this.mesh.scaling.y * resolution[0] / resolution[1]; // set aspect ratio
-
-            // Place loaded mesh
-            this.mesh.position = position;
-    
-            // Setup mesh for following
-            this.follower = new Follower(this.mesh, p, scene);
-            this.follower.billboard(true);
-        }
-
+        // Add to list
+        console.log("[Streamer] Created Streamer", this.name);
+        Streamer.streamers.push(this);
     }
 
     destructor() {
         // Remove mesh from Scene
         this.mesh.dispose();
-        this.light.dispose();
 
-        // Remove video elm from DOM
-        document.getElementById("streams").removeChild(this.src)
+        // Remove DOM elements
+        for (let elm of this.pcpair.getDOMElements()) {
+
+        }
 
         // Remove listeners
         this.follower.destructor();
     }
+
 
     serialize() {
         return {
@@ -116,29 +120,7 @@ class Streamer {
         return this.mesh.absoluteRotationQuaternion;
     }
 
-    play() {
-        this.src.play();
-    }
-    pause() {
-        this.src.pause();
-    }
-
     toggleFollow() {
         this.follower.toggle();
-    }
-
-    setAvatarPose(pose) {
-        let samplePose = {
-            head: [],
-            lhand: [],
-            rhand: []
-        }
-
-        // check - https://doc.babylonjs.com/divingDeeper/mesh/bonesSkeletons
-        // var target = BABYLON.MeshBuilder.createSphere();
-        // var lookCtrl = new BABYLON.BoneLookController(characterMesh, headBone, target.position, { adjustYaw: Math.PI * 0.5, adjustPitch: Math.PI * 0.5, adjustRoll: Math.PI });
-        // scene.registerBeforeRender(function () {
-        //     lookCtrl.update();
-        // });
     }
 }

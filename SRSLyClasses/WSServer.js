@@ -32,7 +32,8 @@ const DEFAULT_CLIENT_STATE = {
         [-1, 0, 1]
     ],
     environment: "forest",
-    room: "118218"
+    room: "118218",
+    xr: false
   }
   
   var AppState = {
