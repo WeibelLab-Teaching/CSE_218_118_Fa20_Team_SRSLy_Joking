@@ -54,6 +54,9 @@ class AvatarStreamer extends Streamer {
         return streamer;
     }
 
+    get model() {
+        return this.mesh.getDescendants()[0];
+    }
 
     setAvatarPose(pose) {
         let samplePose = {

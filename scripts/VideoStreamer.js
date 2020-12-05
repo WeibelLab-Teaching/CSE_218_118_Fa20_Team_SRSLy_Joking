@@ -7,7 +7,7 @@ Makes a streamer that streams vid
 */
 
 class VideoStreamer extends Streamer {
-        constructor(scene, momentum, pair, position=undefined, height = 0.3, resolution=[1920,1080]) {
+        constructor(scene, momentum, pair, position=undefined, height = 1, resolution=[1920,1080]) {
                 super(scene, momentum, pair, position);
                 this.xr = false;
                 this.height = height;
@@ -19,8 +19,13 @@ class VideoStreamer extends Streamer {
                 // video.setPositionWithLocalVector(BABYLON.Vector3(0, 0, 0));
 
                 // Scale to appropriate size
+                // video.scaling = BABLYON.Vector3(
+                //         height * resolution[0]/resolution[1],
+                //         height,
+                //         1
+                // )
                 video.scaling.y = height;
-                video.scaling.x = this.mesh.scaling.y * resolution[0] / resolution[1]; // set aspect ratio
+                video.scaling.x = height * resolution[0] / resolution[1]; // set aspect ratio
 
                 // Create a material from the video
                 let material = new BABYLON.StandardMaterial(this.name + "Mat", scene);
@@ -68,5 +73,9 @@ class VideoStreamer extends Streamer {
         }
         pause() {
                 this.src.pause();
+        }
+
+        get videoMesh() {
+                return this.mesh.getDescendants()[0];
         }
 }

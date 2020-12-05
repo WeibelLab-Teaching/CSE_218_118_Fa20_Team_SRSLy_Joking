@@ -72,6 +72,9 @@ class Streamer {
 
         // Remove listeners
         this.follower.destructor();
+
+        // Remove from list of streamers
+        Streamer.streamers.splice(Streamer.streamers.indexOf(this));
     }
 
 
