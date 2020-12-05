@@ -38,19 +38,19 @@ class Streamer {
     constructor(scene, momentum, pair, position=undefined) {
         this.name = "Streamer" + ApplicationState.streamers.length;
         this.scene = scene;
-        this.mesh = new BABYLON.TransformNode(this.name+"_Mesh", this.scene);
+        this.mesh = new BABYLON.TransformNode(this.name, this.scene);
+        this.mesh.scail
         this.videoSrc = undefined;
         this.audioSrc = undefined;
         this.pcpair = pair;
         this.xr = undefined;
 
         // Set/Generate Position
-        if (position) {
-            this.mesh.position = position;
-        }
-        else {
+        if (!position) {
             position = new BABYLON.Vector3(Math.random(-.5, .5), 2, Math.random(0.5, 1));
         }
+        console.log("[Streamer] Setting node at", position);
+        this.mesh.position = position;
 
         // Setup mesh for following
         this.follower = new Follower(this.mesh, momentum, scene);
@@ -65,10 +65,10 @@ class Streamer {
         // Remove mesh from Scene
         this.mesh.dispose();
 
-        // Remove DOM elements
-        for (let elm of this.pcpair.getDOMElements()) {
+        // Remove DOM elements - let WebRTC handle this?
+        // for (let elm of this.pcpair.getDOMElements()) {
 
-        }
+        // }
 
         // Remove listeners
         this.follower.destructor();
@@ -77,32 +77,37 @@ class Streamer {
 
     serialize() {
         return {
-            uri: this.src.src,
-            avatar: this.avatar,
-            transform: this.mesh.getWorldMatrix().toAarray()
+            type: "Streamer",
+            xr: this.xr,
+            transform: this.mesh.getWorldMatrix().toAarray(),
+            pair: this.pcpair.serialize()
         }
     }
 
-    static deserialize(serial) {
-        // TODO: Deserialize with avatar
+    static deserializeAmbiguous(scene, momentum, serial) {
+        switch (serial.type) {
+            case "Streamer":
+                return Streamer.deserialize(scene, momentum, serial);
+            case "AvatarStreamer":
+                return AvatarStreamer.deserialize(scene, momentum, serial);
+            case "VideoStreamer":
+                return VideoStreamer.deserialize(scene, momentum, serial);
+            default:
+                console.error("Cannot Deserialize unknown type:", serial.type);
+                return null;
+        }
+    }
 
-
-        console.log("Deserializing Streamer", serial);
-        let streamsContainer = document.getElementById("streams");
-        let video = document.createElement("video");
-        video.setAttribute("src", serial.uri);
-        streamsContainer.appendChild(video);
-
-        // Set position
+    static deserialize(scene, momentum, serial) {
+        let pair = PCPair.deserialize(serial.pair);
         let transformationMatrix = BABYLON.Matrix.FromValues(
             serial.transform[0], serial.transform[1], serial.transform[2], serial.transform[3], 
             serial.transform[4], serial.transform[5], serial.transform[6], serial.transform[7], 
             serial.transform[8], serial.transform[9], serial.transform[10], serial.transform[11], 
             serial.transform[12], serial.transform[13], serial.transform[14], serial.transform[15]);
 
-        // Create Streamer object
-        console.log("Creating Streamer at", transformationMatrix.getTranslation());
-        let streamer = new Streamer(video, scene, [1920, 1080], 0.3, transformationMatrix.getTranslation());
+
+        let streamer = new Streamer(scene, momentum, pair, transformationMatrix.getTranslation());
 
         // Set to follow
         if (ApplicationState.following) {

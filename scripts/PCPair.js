@@ -59,6 +59,26 @@ class PCPair {
         return null;
     }
 
+    serialize() {
+        return {
+            producers: this.producers,
+            consumers: this.consumers,
+            socket: this.socket,
+            websocket: this.websocket,
+            xr: this.xr
+        }
+    }
+    
+    static deserialize(data) {
+        let pair = new PCPair();
+        pair.producers = data.prodcuers;
+        pair.consumers = data.consumers;
+        pair.socket = data.socket;
+        pair.websocket = data.websocket;
+        pair.xr = data.xr;
+        return pair;
+    }
+
     /**
      * Removes a PCPair from list of managed pairs, given an id to match.
      * @param {string | undefined} pid the producer id to be used to identify the PCPair to delete
@@ -101,7 +121,7 @@ class PCPair {
             type: "RTC SOCKET ID",
             socketid: rc.socket.id,
             wsid: ApplicationState.id,
-            xr: true
+            xr: ApplicationState.xr
         }
         // console.log("[PCPair] Sending WebRTC Socket ID", data);
         ws.send(JSON.stringify(data))

@@ -45,9 +45,13 @@ function EstablishWebsocketConnection(callback) {
                 }
 
                 // Setup or update streamer
-                // TODO: determine if a streamer needs to be built
-                // TODO: determine if the state has changed between xr and non-xr
                 streamer = pcpair.getStreamer();
+
+                // Destroy streamer if its status has changed
+                if (streamer && msg.xr !== streamer.xr) {
+                    streamer.destructor();
+                    streamer = undefined;
+                }
 
                 // Build a streamer if needed
                 if (!streamer) {
@@ -57,9 +61,6 @@ function EstablishWebsocketConnection(callback) {
                     else {
                         streamer = new VideoStreamer(scene, p, pcpair);
                     }
-                }
-                else {
-                    if (msg.xr !== streamer.xr)
                 }
                     
                 break;
