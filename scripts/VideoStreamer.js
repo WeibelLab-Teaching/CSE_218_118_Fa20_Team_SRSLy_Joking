@@ -28,6 +28,9 @@ class VideoStreamer extends Streamer {
                 let texture = new BABYLON.VideoTexture(this.name, "/assets/samplevid.mp4", scene, true, false);
                 material.diffuseTexture = texture;
                 video.material = material;
+
+                // billboard
+                this.follower.billboard(true);
         }
 
         serialize() {

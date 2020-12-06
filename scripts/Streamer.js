@@ -31,6 +31,8 @@ class Streamer {
     // ==========	Getter and Setter Properties	==========
     get position() {return this.mesh.position;}
     set position(value) {this.mesh.position = value;}
+    get rotation() {return this.mesh.rotation;}
+    set rotation(value) {this.mesh.rotation = value;}
 
 
     // ==========	Creating and Destroying	==========
@@ -56,7 +58,7 @@ class Streamer {
 
         // Setup mesh for following
         this.follower = new Follower(this.mesh, momentum, scene);
-        this.follower.billboard(true);
+        // this.follower.billboard(true);
 
         // Add to list
         console.log("[Streamer] Created Streamer", this.name);

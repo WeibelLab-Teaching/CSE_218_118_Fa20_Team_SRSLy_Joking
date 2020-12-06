@@ -76,6 +76,13 @@ function EstablishWebsocketConnection(callback) {
                 break;
             case "POSE":
                 /* User pose sent for updating avatars */
+                streamer = PCPair.get(null, null, null, msg.id).pair.streamer;
+                if (streamer instanceof AvatarStreamer) {
+                    streamer.setAvatarPose(msg);
+                }
+                else {
+                    console.error("Got pose for a non xr user");
+                }
 
                 // console.log(msg.id, "sent pose", msg.head);
                 break;

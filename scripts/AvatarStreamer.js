@@ -61,12 +61,24 @@ class AvatarStreamer extends Streamer {
         return this.mesh.getDescendants()[0];
     }
 
-    setAvatarPose(pose) {
-        let samplePose = {
-            head: [],
-            lhand: [],
-            rhand: []
-        }
+    setAvatarPose(msg) {
+
+        let head_world = msg.world.head? BABYLON.Matrix.FromArray(msg.world.head): null;
+        let lhand_world = msg.world.lhand? BABYLON.Matrix.FromArray(msg.world.lhand): null;
+        let rhand_world = msg.world.rhand? BABYLON.Matrix.FromArray(msg.world.rhand): null;
+
+        let head_relative = msg.relative.head? BABYLON.Matrix.FromArray(msg.relative.head): null;
+        let lhand_relative = msg.relative.lhand? BABYLON.Matrix.FromArray(msg.relative.lhand): null;
+        let rhand_relative = msg.relative.rhand? BABYLON.Matrix.FromArray(msg.relative.rhand): null;
+
+        // TODO: Choose which elements to use for position and rotation
+
+        // Set head position
+        this.position = head_relative.getTranslation();
+
+        // Quaternions
+        let rot = BABYLON.Quaternion.FromRotationMatrix(head_world.getRotationMatrix());
+        this.mesh.rotation = rot.toEulerAngles();
 
         // check - https://doc.babylonjs.com/divingDeeper/mesh/bonesSkeletons
         // var target = BABYLON.MeshBuilder.createSphere();

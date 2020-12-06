@@ -58,10 +58,8 @@ wss.on('connection', function(conn) {
 
                 case "POSE":
                     // update client's headpose
-                    AppState.clients[client_index].headpose = msg.head;
-                    // broadcast pose
-                    msg["id"] = conn.SRSLy_id;
-                    bcast(JSON.stringify(msg), conn);
+                    AppState.clients[client_index].headpose = msg.world.head;
+                    bcast(rawMessage, conn);
 
                     // TODO: accumulate poses from all clients and send as one packet
                     break;
