@@ -7,7 +7,14 @@
     <script src="js/modules/mediasoupclient.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/EventEmitter/5.2.8/EventEmitter.min.js"></script>
     <script src="js/RoomClient.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
     <style>
+
+        body {
+        background-color: rgb(51, 102, 153);
+        }
+
         .containers {
             display: grid;
             grid-gap: 5px;
@@ -40,17 +47,86 @@
         .hidden {
             display: none
         }
+
+        .textBox {
+            padding: 10;
+            height: 30px;
+            width: 120px;
+            position: relative;
+            left: 0;
+            outline: none;
+            border: 1px solid #cdcdcd;
+            border-color: rgba(0,0,0,.15);
+            background-color: white;
+            font-size: 16px;
+        }
+
+
+        .joinElements {
+            margin: 0 auto;
+            width: 50%;
+            text-align: center;
+        }
+
+        .text{
+            color: whitesmoke;
+            width: 100%;
+        }
+
+        .joinButton{
+            width: 45%;
+            font-weight: bold;
+            padding: 10px;
+        }
+
+        #buttons-container {
+        position: absolute;
+        z-index: 2;  
+        padding: 25px;
+        width: 100vw;
+        bottom:0;
+        }
+
     </style>
 </head>
 
 <body>
-    <div id="login">
-        Room:   <input id="roomidInput" value="123" type="text" />
-        <!--<button id="createRoom" onclick="createRoom(roomid.value)" label="createRoom">Create Room</button>-->
-        <br />
-        User: <input id='nameInput' value="bob" type="text" />
-        <button id='joinButton' onclick="joinRoom(nameInput.value, roomidInput.value)">Join</button>
+    <div id = "firstPage" class = "joinElements">
+        <div id="login" class="joinElements">
+            <br/>
+            <img src="assets/logo.png" style="width: 85%"/>
+            <div class="container text">
+                <div class="row">
+                    <div class="col-sm-8" style="align-self: flex-end; padding:0;">
+                        <h6 style="float: right;">Enter Meeting ID</h6>
+                    </div>
+                    <div class="col-sm-4" >
+                        <input id="roomidInput" value="123" type="text" class="textBox"/>
+                    </div>
+                </div>
+            </div>
+
+            <br/>
+            
+            <div class="container text">
+                <div class="row">
+                    <div class="col-sm-8" style="align-self: flex-end; padding:0;">
+                        <h6 style="float: right;">Enter Your Name</h6>
+                    </div>
+                    <div class="col-sm-4" >
+                        <input id='nameInput' value="bob" type="text" class="textBox"/>
+                    </div>
+                </div>
+            </div>
+
+            <br/>
+            <br/>
+
+            <!--<button id="createRoom" onclick="createRoom(roomid.value)" label="createRoom">Create Room</button>-->
+            <button id='joinButton' class="btn btn-success joinButton" onclick="joinRoom(nameInput.value, roomidInput.value)">JOIN MEETING</button>
+        </div>
     </div>
+
     <div id="control" class="hidden">
         <button id='exitButton' class='hidden' onclick="rc.exit()">Exit</button>
         <br/>
