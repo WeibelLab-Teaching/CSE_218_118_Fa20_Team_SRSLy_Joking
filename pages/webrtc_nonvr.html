@@ -184,18 +184,18 @@
                 </button>
             </div>
             <div class="col-md-2 text-center">
-                <button id='startVideoButton' type = 'button' class='hidden' onclick="rc.produce(RoomClient.mediaType.video, videoSelect.value)">
+                <button id='startVideoButton' type = 'button' class='btn btn-block btn-dark btn-lg hidden' onclick="rc.produce(RoomClient.mediaType.video, videoSelect.value)">
                     <i id="video-icon" class="fas fa-video"></i>
                 </button>
-                <button id='stopVideoButton' type = 'button' class='hidden' onclick="rc.closeProducer(RoomClient.mediaType.video)">
+                <button id='stopVideoButton' type = 'button' class='btn btn-block btn-dark btn-lg hidden' onclick="rc.closeProducer(RoomClient.mediaType.video)">
                     <i id="video-stop-icon" class="fas fa-video-slash"></i>
                 </button>
             </div>
             <div class="col-md-2 text-center">
-                <button id='startScreenButton' type = 'button' class='hidden' onclick="rc.produce(RoomClient.mediaType.screen)">
+                <button id='startScreenButton' type = 'button' class='btn btn-block btn-dark btn-lg hidden' onclick="rc.produce(RoomClient.mediaType.screen)">
                     <i id="screen-share-icon" class="fas fa-desktop"></i>
                 </button>
-                <button id='stopScreenButton' type = 'button' class='hidden' onclick="rc.closeProducer(RoomClient.mediaType.screen)">
+                <button id='stopScreenButton' type = 'button' class='btn btn-block btn-dark btn-lg hidden' onclick="rc.closeProducer(RoomClient.mediaType.screen)">
                     <i id="screen-share-icon" class="fas fa-desktop"></i>
                 </button>
             </div>
