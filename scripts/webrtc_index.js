@@ -113,3 +113,15 @@ navigator.mediaDevices.enumerateDevices().then(devices =>
     el.appendChild(option)
   })
 )
+
+// Creates a recorder object for recording media
+
+
+let recorder = null
+
+function createRecorder() {
+  recorder = new Recorder();
+
+}
+
+createRecorder()

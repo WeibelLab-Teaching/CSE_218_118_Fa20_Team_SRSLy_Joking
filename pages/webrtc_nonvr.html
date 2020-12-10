@@ -7,6 +7,7 @@
     <script src="js/modules/mediasoupclient.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/EventEmitter/5.2.8/EventEmitter.min.js"></script>
     <script src="js/RoomClient.js"></script>
+    <script src="js/Recorder.js"></script>
     <style>
         .containers {
             display: grid;
@@ -70,6 +71,10 @@
         <button id='stopScreenButton' class='hidden' onclick="rc.closeProducer(RoomClient.mediaType.screen)">close
             screen</button>
         <br />
+
+        <button onclick="createRecorder()"> create recorder </button>
+        <button onclick="recorder.start()"> start recorder </button>
+        <button onclick="recorder.stop()"> stop recorder </button>
     </div>
 
 
@@ -84,6 +89,7 @@
         </div>
 
         <div id="remoteAudios"></div>
+        <div id="soundClips"></div>
 
     </div>
 </body>

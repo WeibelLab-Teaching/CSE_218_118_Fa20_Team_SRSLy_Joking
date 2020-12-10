@@ -347,6 +347,12 @@ class RoomClient {
                 if(typeof addStreamer !== "undefined") {
                     addStreamer(elem)
                 }
+            } else {
+                if (recorder !== null) {
+                    recorder.addAudioStream(stream);
+                } else {
+                    console.log("No Recorder")
+                }
             }
 
             producer.on('trackended', () => {
@@ -429,6 +435,11 @@ class RoomClient {
                 elem.playsinline = false
                 elem.autoplay = true
                 this.remoteAudioEl.appendChild(elem)
+                if (recorder !== null) {
+                    recorder.addAudioStream(stream);
+                } else {
+                    console.log("No Recorder")
+                }
             }
 
             consumer.on('trackended', function () {
