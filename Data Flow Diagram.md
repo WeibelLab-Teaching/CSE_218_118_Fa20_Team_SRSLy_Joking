@@ -1,13 +1,3 @@
-# Data Flow Diagram
-
-Diagram showing how data is managed between the WebRTC connection, the Streamer objects and the Websocket. 
-
-WebRTC has ids: `socket_id`, `consumer_id`, `producer_id`
-
-Websocket and streamer have a shared id: `websocket_id`
-
-In order to match these ids together, the `PCPair` class takes ids from both and links them together so that when the `Streamer` or `Websocket` refer to their id, it is related to the corresponding WebRTC dis.
-
 ```mermaid
 sequenceDiagram
 participant Streamer_x

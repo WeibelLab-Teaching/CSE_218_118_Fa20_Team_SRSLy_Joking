@@ -5,11 +5,16 @@ var scene = undefined;
 var xr = undefined;
 var xrHelper = undefined;
 var treeMesh = undefined;
+var rockMesh = undefined;
+var environmentMeshes = [];
 var p = undefined;
 var userCamera;
 var userLHand;
 var userRHand;
 var webRTCStreamer = undefined;
+
+
+var recordButton;
 
 // TEMP: For debugging
 var skeleton;
@@ -142,6 +147,10 @@ async function createScene(callback) {
 	let joinButton = new BABYLON.GUI.HolographicButton("Join Button");
 	guiPanel.addControl(joinButton);
 	joinButton.onPointerUpObservable.add(onMeetingJoin);
+	// Record button
+	recordButton = new BABYLON.GUI.HolographicButton("Record");
+	guiPanel.addControl(recordButton);
+	recordButton.onPointerUpObservable.add(onRecordPressed);
 
 
 	//// add text
@@ -169,6 +178,12 @@ async function createScene(callback) {
 	connectText.color = "white";
 	connectText.fontSize = 30;
 	joinButton.content = connectText;
+	// Record
+	let recordText = new BABYLON.GUI.TextBlock();
+	recordText.text = "Record";
+	recordText.color="white";
+	recordText.fontSize = 30;
+	recordButton.content = recordText;
 
 	if (callback) {
 		callback(scene);
@@ -266,9 +281,65 @@ function onFollowClicked() {
  */
 function onEnvironmentClicked() {
 	console.log("Change Environment");
+	for (mesh of environmentMeshes) {
+		mesh.dispose();
+	}
 
 	// TEMP: randomly spawn trees
-	spawnTrees();
+	// spawnTrees();
+	spawnRocks();
+}
+
+function spawnRocks(numberToSpawn=15) {
+	function spawn(numberToSpawn) {
+		// spawn a bunch of trees
+		let pos;
+
+		for (let i = 0; i < numberToSpawn; i++) {
+			pos = new BABYLON.Vector3(Math.random() * 4 * numberToSpawn - 2 * numberToSpawn, 0, Math.random() * 4 * numberToSpawn - 2 * numberToSpawn);
+			while (isInPlayArea(pos.asArray())) {
+				console.log(`position (${pos.x}, ${pos.y}, ${pos.z}) is in play area`);
+				pos = new BABYLON.Vector3(Math.random() * 4 * numberToSpawn - 2 * numberToSpawn, 0, Math.random() * 4 * numberToSpawn - 2 * numberToSpawn);
+			}
+			rot = new BABYLON.Vector3(Math.random() * 4 * numberToSpawn - 2 * numberToSpawn, Math.random(), Math.random() * 4 * numberToSpawn - 2 * numberToSpawn)
+			scale = new BABYLON.Vector3(Math.random(), Math.random(), Math.random());
+
+			for (let j = 0; j < rockMesh.length; j++) {
+				let instance = rockMesh[j].createInstance(`Rock${i}_part${j}`);
+				instance.scaling = scale;
+				instance.locallyTranslate(pos);
+				instance.rotation = rot;
+				environmentMeshes.push(instance);
+			}
+		}
+	}
+
+
+	if (!rockMesh) {
+		BABYLON.SceneLoader.ImportMesh(null, "/assets/", "rock.glb", scene, function (meshes) {
+			// console.log("Loaded Tree model at", meshes.map((m) => {
+			// 	return m.name + " at " + m.position
+			// }));
+
+			console.log(meshes);
+
+			rockMesh = meshes.filter(mesh => {return mesh.name !== "__root__"});
+			let pos = new BABYLON.Vector3(Math.random() * 4 * numberToSpawn - 2 * numberToSpawn, 0, Math.random() * 4 * numberToSpawn - 2 * numberToSpawn);
+			for (mesh of meshes) {
+				mesh.locallyTranslate(pos);
+				environmentMeshes.push(mesh);
+			}
+			console.log("Positioned tree model at", pos);
+			spawn(numberToSpawn - 1) // -1 because we just made one by importing the mesh
+		});
+
+		// Set Ground texture
+		let groundMaterial = new BABYLON.StandardMaterial("groundMat", scene);
+		groundMaterial.diffuseTexture = new BABYLON.Texture("/assets/BeachGround/Ground033_2K_Color.jpg", scene);
+		scene.getMeshesByID("ground")[0].material = groundMaterial;
+	} else {
+		spawn(numberToSpawn);
+	}
 }
 
 /**
@@ -291,6 +362,7 @@ function spawnTrees(numberToSpawn = 15) {
 
 			for (let j = 0; j < treeMesh.length; j++) {
 				let instance = treeMesh[j].createInstance(`Tree${i}_part${j}`);
+				environmentMeshes.push(instance);
 				instance.locallyTranslate(pos);
 			}
 		}
@@ -309,6 +381,7 @@ function spawnTrees(numberToSpawn = 15) {
 			let pos = new BABYLON.Vector3(Math.random() * 4 * numberToSpawn - 2 * numberToSpawn, 0, Math.random() * 4 * numberToSpawn - 2 * numberToSpawn);
 			for (mesh of meshes) {
 				mesh.locallyTranslate(pos);
+				environmentMeshes.push(mesh);
 			}
 			console.log("Positioned tree model at", pos);
 			spawn(numberToSpawn - 1) // -1 because we just made one by importing the mesh
@@ -350,6 +423,24 @@ function onMeetingJoin(roomid=123) {
 	//TODO do something with roomid, for now it's just room #1.
 	console.log("Join Meeting Room #" + roomid);
 	
+}
+
+var recording = false;
+function onRecordPressed() {
+	recording = !recording;
+	console.log("Now Recording", recording);
+
+	// Update text
+	if (recording) {
+		recordButton.content.text = "RECORDING";
+		recordButton.plateMaterial.diffuseColor = new BABYLON.Color3(1, 0, 0)
+	}
+	else {
+		recordButton.content.text = "Record";
+		recordButton.plateMaterial.diffuseColor = new BABYLON.Color3(1, 1, 1)
+	}
+
+	// TODO: Implement acutal recording
 }
 
 

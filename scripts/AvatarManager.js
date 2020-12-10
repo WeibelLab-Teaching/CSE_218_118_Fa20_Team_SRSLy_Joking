@@ -31,10 +31,10 @@ function sendPose() {
 		}
 	}))
 
-	setTimeout(sendPose, 1000); // Change the delay to increase or decrease pose update frequency
+	setTimeout(sendPose, 10); // Change the delay to increase or decrease pose update frequency
 }
 
 function chooseAvatar(callback) {
-	let uri = prompt("Select your avatar (input the uri)", "/assets/avatars/Dude/Dude.babylon");
+	let uri = prompt("Select your avatar (input the uri)", "/assets/avatars/avatar/dummy2.babylon");
 	callback(uri);
 }
