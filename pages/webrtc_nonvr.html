@@ -7,8 +7,18 @@
     <script src="js/modules/mediasoupclient.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/EventEmitter/5.2.8/EventEmitter.min.js"></script>
     <script src="js/RoomClient.js"></script>
+<<<<<<< HEAD
     <script src="js/Recorder.js"></script>
+=======
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
+>>>>>>> 0cc6af471f8806f2413b0d19a836194c8345a2b8
     <style>
+
+        body {
+        background-color: rgb(51, 102, 153);
+        }
+
         .containers {
             display: grid;
             grid-gap: 5px;
@@ -23,6 +33,7 @@
         .vid {
             flex: 0 1 auto;
             height: 400px;
+            padding: 20px;
         }
 
         .settings {
@@ -41,35 +52,164 @@
         .hidden {
             display: none
         }
+
+        .textBox {
+            padding: 10;
+            height: 30px;
+            width: 120px;
+            position: relative;
+            left: 0;
+            outline: none;
+            border: 1px solid #cdcdcd;
+            border-color: rgba(0,0,0,.15);
+            background-color: white;
+            font-size: 16px;
+        }
+
+
+        .joinElements {
+            margin: 0 auto;
+            width: 50%;
+            text-align: center;
+        }
+
+        .text{
+            color: whitesmoke;
+            width: 100%;
+        }
+
+        .joinButton{
+            width: 45%;
+            font-weight: bold;
+            padding: 10px;
+        }
+
+        #buttons-container {
+            position: absolute;
+            z-index: 2;  
+            padding: 25px;
+            width: 100vw;
+            bottom:0;
+        }
+
+        .videos {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            margin-top: 25px;
+            min-width: 150px;
+        }
+
+
     </style>
 </head>
 
 <body>
-    <div id="login">
-        Room:   <input id="roomidInput" value="123" type="text" />
-        <!--<button id="createRoom" onclick="createRoom(roomid.value)" label="createRoom">Create Room</button>-->
-        <br />
-        User: <input id='nameInput' value="bob" type="text" />
-        <button id='joinButton' onclick="joinRoom(nameInput.value, roomidInput.value)">Join</button>
+    <div id = "firstPage" class = "joinElements">
+        <div id="login" class="joinElements">
+            <br/>
+            <img src="assets/logo.png" style="width: 85%"/>
+            <div class="container text">
+                <div class="row">
+                    <div class="col-sm-8" style="align-self: flex-end; padding:0;">
+                        <h6 style="float: right;">Enter Meeting ID</h6>
+                    </div>
+                    <div class="col-sm-4" >
+                        <input id="roomidInput" value="123" type="text" class="textBox"/>
+                    </div>
+                </div>
+            </div>
+
+            <br/>
+            
+            <div class="container text">
+                <div class="row">
+                    <div class="col-sm-8" style="align-self: flex-end; padding:0;">
+                        <h6 style="float: right;">Enter Your Name</h6>
+                    </div>
+                    <div class="col-sm-4" >
+                        <input id='nameInput' value="bob" type="text" class="textBox"/>
+                    </div>
+                </div>
+            </div>
+
+            <br/>
+            <br/>
+
+            <!--<button id="createRoom" onclick="createRoom(roomid.value)" label="createRoom">Create Room</button>-->
+            <button id='joinButton' class="btn btn-success joinButton" onclick="joinRoom(nameInput.value, roomidInput.value)">JOIN MEETING</button>
+        </div>
     </div>
+
     <div id="control" class="hidden">
-        <button id='exitButton' class='hidden' onclick="rc.exit()">Exit</button>
-        <br/>
-        audio: <select id="audioSelect">
+
+
+        <!-- breaks if this element is removed, so it is hidden for now -->
+        <button id='exitButton' class='hidden' style="visibility: hidden" onclick="rc.exit()">Exit</button>
+
+        <div class="container text">
+            <div class="row" style="width: 90%;">
+                <div class="col-sm-5" style="align-self: flex-end; padding:0;">
+                    <h6 style="float: right;">Choose Audio Source</h6>
+                </div>
+                <div class="col-sm-7" >
+                    <select id="audioSelect" style="max-width:400px;">
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="container text">
+            <div class="row" style="width: 90%;">
+                <div class="col-sm-5" style="align-self: flex-end; padding:0;">
+                    <h6 style="float: right;">Choose Camera</h6>
+                </div>
+                <div class="col-sm-7" >
+                    <select id="videoSelect" style="max-width:400px;">
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- audio: <select id="audioSelect">
         </select>
         <br/>
         video: <select id="videoSelect">
         </select>
-        <br />
-        <button id='startAudioButton' class='hidden' onclick="rc.produce(RoomClient.mediaType.audio, audioSelect.value)">audio</button>
-        <button id='stopAudioButton' class='hidden' onclick="rc.closeProducer(RoomClient.mediaType.audio)">close
-            audio</button>
-        <button id='startVideoButton' class='hidden' onclick="rc.produce(RoomClient.mediaType.video, videoSelect.value)">video</button>
-        <button id='stopVideoButton' class='hidden' onclick="rc.closeProducer(RoomClient.mediaType.video)">close
-            video</button>
-        <button id='startScreenButton' class='hidden' onclick="rc.produce(RoomClient.mediaType.screen)">screen</button>
-        <button id='stopScreenButton' class='hidden' onclick="rc.closeProducer(RoomClient.mediaType.screen)">close
-            screen</button>
+        <br /> -->
+        <div id="buttons-container" class="row justify-content-center footer">
+            <div class="col-md-2 text-center">
+                <button id='startAudioButton' type = 'button' class='btn btn-block btn-dark btn-lg hidden' onclick="rc.produce(RoomClient.mediaType.audio, audioSelect.value)">
+                    <i id="mic-icon" class="fas fa-microphone"></i>
+                </button>
+                <button id='stopAudioButton' type = 'button' class='btn btn-block btn-dark btn-lg hidden' onclick="rc.closeProducer(RoomClient.mediaType.audio)">
+                    <i id="mic-mute-icon" class="fas fa-microphone-slash"></i>
+                </button>
+            </div>
+            <div class="col-md-2 text-center">
+                <button id='startVideoButton' type = 'button' class='btn btn-block btn-dark btn-lg hidden' onclick="rc.produce(RoomClient.mediaType.video, videoSelect.value)">
+                    <i id="video-icon" class="fas fa-video"></i>
+                </button>
+                <button id='stopVideoButton' type = 'button' class='btn btn-block btn-dark btn-lg hidden' onclick="rc.closeProducer(RoomClient.mediaType.video)">
+                    <i id="video-stop-icon" class="fas fa-video-slash"></i>
+                </button>
+            </div>
+            <div class="col-md-2 text-center">
+                <button id='startScreenButton' type = 'button' class='btn btn-block btn-dark btn-lg hidden' onclick="rc.produce(RoomClient.mediaType.screen)">
+                    <i id="screen-share-icon" class="fas fa-desktop"></i>
+                </button>
+                <button id='stopScreenButton' type = 'button' class='btn btn-block btn-dark btn-lg hidden' onclick="rc.closeProducer(RoomClient.mediaType.screen)">
+                    <i id="screen-share-icon" class="fas fa-desktop"></i>
+                </button>
+            </div>
+            <div class="col-md-2 text-center">
+                <button id="exit-btn"  type="button" class="btn btn-block btn-danger btn-lg" onclick="rc.exit()">
+                    <i id="exit-icon" class="fas fa-phone-slash"></i>
+                </button>
+            </div>
+        </div>
+        
         <br />
 
         <button onclick="createRecorder()"> create recorder </button>
@@ -80,11 +220,11 @@
 
 
 
-    <div id='videoMedia' class='hidden'>
+    <div id='videoMedia' class='hidden' style="max-height:60%">
         <div id="streams"></div>
         <!--<video id="localVideo" autoplay inline class="vid"></video>-->
         <!--<video id="localScreen" autoplay inline class="vid"></video>-->
-        <h2>-----remote-----</h2>
+        <!-- <h2>-----remote-----</h2> -->
         <div id="remoteVideos" class="container">
         </div>
 
