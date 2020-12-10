@@ -46,14 +46,18 @@ function roomOpen() {
   hide(stopScreenButton)
   reveal(exitButton)
   control.className = ''
-  reveal(videoMedia)
+  reveal_nostyle(videoMedia)
 }
 
 function hide(elem) {
-  elem.className = 'hidden'
+  elem.className = 'btn btn-block btn-dark btn-lg hidden'
 }
 
 function reveal(elem) {
+  elem.className = 'btn btn-block btn-dark btn-lg'
+}
+
+function reveal_nostyle(elem) {
   elem.className = ''
 }
 
@@ -90,7 +94,7 @@ function addListeners() {
   })
   rc.on(RoomClient.EVENTS.exitRoom, () => {
     hide(control)
-    reveal(login)
+    reveal_nostyle(login)
     hide(videoMedia)
   })
 
