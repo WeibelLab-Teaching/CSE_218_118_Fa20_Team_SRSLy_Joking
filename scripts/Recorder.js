@@ -120,39 +120,44 @@ class Recorder {
       
         var clipName = prompt('Enter a name for your sound clip');
   
-        var clipContainer = document.createElement('article');
-        var clipLabel = document.createElement('p');
-        var audio = document.createElement('audio');
-        var deleteButton = document.createElement('button');
-       
-        clipContainer.classList.add('clip');
-        audio.setAttribute('controls', '');
-        deleteButton.innerHTML = "Delete";
-        clipLabel.innerHTML = clipName;
-  
-        clipContainer.appendChild(audio);
-        clipContainer.appendChild(clipLabel);
-        clipContainer.appendChild(deleteButton);
-        soundClips.appendChild(clipContainer);
-  
-        audio.controls = true;
-        var blob = new Blob(this.chunks, { 'type' : 'audio/mp3' });
-        var audioURL = URL.createObjectURL(blob);
-        audio.src = audioURL;
-        console.log("recorder stopped");
-  
-        deleteButton.onclick = function(e) {
-          evtTgt = e.target;
-          evtTgt.parentNode.parentNode.removeChild(evtTgt.parentNode);
-        }.bind(this)
+        var i;
+        for(i = 0; i < this.chunks.length; i++) {
 
-        console.log(this.chunks)
-
-        var link = document.createElement("a"); // Or maybe get it from the current document
-        link.href = audioURL;
-        link.download = clipName + ".mp3";
-        link.innerHTML = "Click here to download the file";
-        clipContainer.appendChild(link); // Or append it whereever you want
+            var clipContainer = document.createElement('article');
+            var clipLabel = document.createElement('p');
+            var audio = document.createElement('audio');
+            var deleteButton = document.createElement('button');
+           
+            clipContainer.classList.add('clip');
+            audio.setAttribute('controls', '');
+            deleteButton.innerHTML = "Delete";
+            clipLabel.innerHTML = clipName + i;
+      
+            clipContainer.appendChild(audio);
+            clipContainer.appendChild(clipLabel);
+            clipContainer.appendChild(deleteButton);
+            soundClips.appendChild(clipContainer);
+      
+            audio.controls = true;
+            var blob = new Blob([this.chunks[i]], { 'type' : this.chunks[i].type});
+            var audioURL = URL.createObjectURL(blob);
+            audio.src = audioURL;
+            console.log("recorder stopped");
+      
+            deleteButton.onclick = function(e) {
+              evtTgt = e.target;
+              evtTgt.parentNode.parentNode.removeChild(evtTgt.parentNode);
+            }.bind(this)
+    
+            console.log(this.chunks)
+    
+            var link = document.createElement("a"); // Or maybe get it from the current document
+            link.href = audioURL;
+            link.download = clipName + ".mp3";
+            link.innerHTML = "Click here to download the file";
+            clipContainer.appendChild(link); // Or append it whereever you want
+        }
+        
 
     } 
 }

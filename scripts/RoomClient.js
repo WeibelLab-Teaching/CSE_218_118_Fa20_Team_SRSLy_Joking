@@ -351,6 +351,7 @@ class RoomClient {
                 }
             } else {
                 if (recorder !== null) {
+                    console.log("Added own audio to recorder")
                     recorder.addAudioStream(stream);
                 } else {
                     console.log("No Recorder")
