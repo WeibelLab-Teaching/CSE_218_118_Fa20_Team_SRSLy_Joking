@@ -27,6 +27,16 @@ class AvatarStreamer extends Streamer {
 
             // Set body pose to something natural
             AvatarStreamer.setRestingPose(this.skeleton);
+
+            // Fix follower
+            // this.follower = new Follower(
+            //     this.skeleton.bones.filter(b=>b.name.match(/Hips/))[0], 
+            //     momentum, 
+            //     scene);
+            this.follower._face_logic();
+            this.follower.billboard(true, 2);
+
+
         }.bind(this));
 
         // Import as scene
@@ -34,6 +44,7 @@ class AvatarStreamer extends Streamer {
         //     console.log("Loaded Avatar as scene", newScene);
         //     this.mesh = newScene;
         // }.bind(this));
+
     }
 
     serialize() {
@@ -66,6 +77,9 @@ class AvatarStreamer extends Streamer {
     }
 
     setAvatarPose(msg) {
+        if (!this.skeleton){
+            return
+        }
 
         let head_world = msg.world.head? BABYLON.Matrix.FromArray(msg.world.head): null;
         let lhand_world = msg.world.lhand? BABYLON.Matrix.FromArray(msg.world.lhand): null;
@@ -131,6 +145,5 @@ class AvatarStreamer extends Streamer {
             // Legs
             hipSockets[i].setRotation(rot_hipSockets[i]);
         }
-
     }
 }
