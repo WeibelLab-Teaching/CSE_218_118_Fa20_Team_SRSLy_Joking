@@ -17,6 +17,7 @@ class Recorder {
         this.isRecording = false
     }
 
+    // ONly happens when a user presses the stop record button
     stop() {
         this.mediaRecorder.stop();
         console.log("Stopping recording...");
@@ -25,6 +26,7 @@ class Recorder {
         this.isRecording = false
     }
 
+    // Only happens when a user presses the start button on the record button
     start() {
         // get the new stream from the different audio tracks
         const stream = this.createNewStream(); 
@@ -53,10 +55,12 @@ class Recorder {
         rc.event(RoomClient.EVENTS.startRecord);
     }
 
-    // restarts the media recorder without removing chunks
+    // restarts the media recorder without removing chunks, allowing for the full file
     startWithoutRemovingChunks() {
         // Do nothing on stop, just restart the stream
         this.mediaRecorder.onstop = null
+        this.mediaRecorder.stop();
+        console.log("Stop with a null function")
 
         const stream = this.createNewStream(); 
 
@@ -109,6 +113,7 @@ class Recorder {
     }
 
 
+    // This callback happens when the recorder is stopped via button.
     _onStopRecorderCallBack(e) {
 
         console.log("data available after MediaRecorder.stop() called.");
