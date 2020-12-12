@@ -1,5 +1,6 @@
 
 class AvatarStreamer extends Streamer {
+
     constructor(scene, momentum, pair, position=undefined, avatarUri="") {
         super(scene, momentum, pair, position);
 
@@ -25,7 +26,7 @@ class AvatarStreamer extends Streamer {
             // scene.beginAnimation(this.skeleton, 0, 100, 1, true);
 
             // Set body pose to something natural
-
+            AvatarStreamer.setRestingPose(this.skeleton);
         }.bind(this));
 
         // Import as scene
@@ -94,5 +95,42 @@ class AvatarStreamer extends Streamer {
         // scene.registerBeforeRender(function () {
         //     lookCtrl.update();
         // });
+    }
+
+    static setRestingPose(skeleton) {
+        // TODO: Make more natural
+        
+
+        // Arms
+        let shoulders = skeleton.bones.filter(b=>b.name.match(/Shoulder$/));
+        let shoulderSockets = skeleton.bones.filter(b=>b.name.match(/(Left|Right)Arm$/));
+        let elboes = skeleton.bones.filter(b=>b.name.match(/(Left|Right)ForeArm$/));
+        let wrists = skeleton.bones.filter(b=>b.name.match(/(Left|Right)Hand$/));
+
+        let rot_shoulders = [new BABYLON.Vector3(0, 0, 0), new BABYLON.Vector3(0, 0, 0)];
+        let rot_shoulderSockets = [new BABYLON.Vector3(0, 0, math.pi/2.1), new BABYLON.Vector3(0, 0, -math.pi/2.1)];
+        let rot_elboes = [new BABYLON.Vector3(.25, 0, .1), new BABYLON.Vector3(-.25, 0, -0.1)];
+        let rot_wrists = [new BABYLON.Vector3(0, 0, 0.1), new BABYLON.Vector3(0, 0, -0.1)];
+        
+        // Hands
+
+        // legs
+        let hipSockets = skeleton.bones.filter(b=>b.name.match(/(Left|Right)UpLeg$/));
+
+        let rot_hipSockets = [new BABYLON.Vector3(0, math.random()*0.5, 0), new BABYLON.Vector3(0, math.random()*-0.5, 0)]
+
+
+        // Set values
+        for (let i=0; i<2; i++) {
+            // Arms
+            shoulders[i].setRotation(rot_shoulders[i]);
+            shoulderSockets[i].setRotation(rot_shoulderSockets[i]);
+            elboes[i].setRotation(rot_elboes[i]);
+            wrists[i].setRotation(rot_wrists[i]);
+            // Hands
+            // Legs
+            hipSockets[i].setRotation(rot_hipSockets[i]);
+        }
+
     }
 }
