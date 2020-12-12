@@ -22,7 +22,10 @@ class AvatarStreamer extends Streamer {
 
             // Scale waaaay down
             // model.scaling = new BABYLON.Vector3(0.03, 0.03, 0.03);
-            scene.beginAnimation(this.skeleton, 0, 100, 1, true);
+            // scene.beginAnimation(this.skeleton, 0, 100, 1, true);
+
+            // Set body pose to something natural
+
         }.bind(this));
 
         // Import as scene
@@ -73,12 +76,17 @@ class AvatarStreamer extends Streamer {
 
         // TODO: Choose which elements to use for position and rotation
 
-        // Set head position
-        this.position = head_relative.getTranslation();
+        // Rotate head to match user
+        let rot = BABYLON.Quaternion.FromRotationMatrix(head_world.getRotationMatrix())
+        let headbone = this.skeleton.bones.filter(b=>b.name.match(/[hH]ead$/))[0]
+        headbone.setRotation(rot)
 
-        // Quaternions
-        let rot = BABYLON.Quaternion.FromRotationMatrix(head_world.getRotationMatrix());
-        this.mesh.rotation = rot.toEulerAngles();
+        // Set head position
+        // this.position = head_relative.getTranslation();
+
+        // // Quaternions
+        // let rot = BABYLON.Quaternion.FromRotationMatrix(head_world.getRotationMatrix());
+        // this.mesh.rotation = rot.toEulerAngles();
 
         // check - https://doc.babylonjs.com/divingDeeper/mesh/bonesSkeletons
         // var target = BABYLON.MeshBuilder.createSphere();
