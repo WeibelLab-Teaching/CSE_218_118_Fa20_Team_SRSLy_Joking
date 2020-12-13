@@ -54,9 +54,11 @@ function EstablishWebsocketConnection(callback) {
 
                 // Setup or update streamer
                 streamer = pcpair.streamer;
+                let rtc_socket_id_streamerPosition = undefined;
 
                 // Destroy streamer if its status has changed
                 if (streamer && msg.xr !== streamer.xr) {
+                    rtc_socket_id_streamerPosition = streamer.position;
                     streamer.destructor();
                     streamer = "reset";
                 }
@@ -64,11 +66,11 @@ function EstablishWebsocketConnection(callback) {
                 // Build a streamer if needed
                 if ((!streamer && rtc_socket_id_isNewPCPair) || streamer==="reset") {
                     if (msg.xr) {
-                        streamer = new AvatarStreamer(scene, p, pcpair, undefined, msg.avatarModel);
+                        streamer = new AvatarStreamer(scene, p, pcpair, rtc_socket_id_streamerPosition, msg.avatarModel);
                         console.log("[Websocket] created avatar streamer", streamer);
                     }
                     else {
-                        streamer = new VideoStreamer(scene, p, pcpair);
+                        streamer = new VideoStreamer(scene, p, pcpair, rtc_socket_id_streamerPosition);
                         console.log("[Websocket] created video streamer", streamer);
                     }
                 }
