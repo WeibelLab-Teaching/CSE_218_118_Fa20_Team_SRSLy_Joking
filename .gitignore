@@ -1,1 +1,9 @@
 /node_modules
+.DS_Store
+cert/myCA.key
+cert/myCA.pem
+cert/myCA.srl
+cert/tlsharkey.com.crt
+cert/tlsharkey.com.csr
+cert/tlsharkey.com.ext
+cert/tlsharkey.com.key

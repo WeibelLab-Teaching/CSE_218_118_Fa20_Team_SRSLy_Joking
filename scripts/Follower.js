@@ -2,11 +2,12 @@
  * Class for making on object follow another
  */
 class Follower {
-    constructor(mesh, target) {
+    constructor(mesh, target, scene) {
         this.mesh = mesh;
         this.target = target;
-        this.scene = mesh.scene;
+        this.scene = scene;
         this.isFollowing = false;
+        this.isBillboarding = 0;
         this.initialOffset = null;
         this.referenceNode = null;
     }
@@ -36,6 +37,58 @@ class Follower {
         this.mesh.position.x = pos[0];
         this.mesh.position.y = pos[1];
         this.mesh.position.z = pos[2];
+    }
+
+    billboard(enable=true, strategy=1) {
+        // Remove old billboarding logic=
+        switch (this.isBillboarding) {
+            case 0:
+                break;
+            case 1:
+                this.scene.onBeforeRenderObservable.remove(this._billboard_logic.bind(this));
+                break;
+            case 2:
+                this.scene.onBeforeRenderObservable.remove(this._face_logic.bind(this));
+                break;
+            default:
+                console.error("Unknown billboarding type", this.isBillboarding);
+                enable = false;
+                break;
+        }
+
+
+        if (enable) {
+            switch (strategy) {
+                case 1:
+                    this.scene.onBeforeRenderObservable.add(this._billboard_logic.bind(this));
+                    this.isBillboarding = 1
+                    break;
+                case 2:
+                    this.scene.onBeforeRenderObservable.add(this._face_logic.bind(this));
+                    this.isBillboarding = 2
+                    break;
+                default:
+                    console.error("Unknown billboarding strategy", strategy);
+                    break;
+            }
+        }
+        else {
+            this.isBillboarding = 0
+        }
+    }
+
+    _billboard_logic() {
+        this.mesh.lookAt(this.scene.activeCamera.position, Math.PI)
+    }
+
+    _face_logic() {
+        let targetPosition = (new Pose(this.target.pose)).position
+
+        let theta = math.atan2(
+            targetPosition[0] - this.mesh.position.x,
+            targetPosition[2] - this.mesh.position.z
+        )
+        this.mesh.rotation.y = theta;
     }
 
     /**

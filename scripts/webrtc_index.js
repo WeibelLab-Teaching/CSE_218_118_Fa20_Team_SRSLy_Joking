@@ -7,10 +7,9 @@ if (location.href.substr(0, 5) !== 'https')
 
 const socket = io()
 
-
 let producer = null;
 
-nameInput.value = 'bob' + Math.round(Math.random() * 1000)
+// nameInput.value = 'bob' + Math.round(Math.random() * 1000)
 
 socket.request = function request(type, data = {}) {
   return new Promise((resolve, reject) => {
@@ -98,6 +97,14 @@ function addListeners() {
     reveal_nostyle(login)
     hide(videoMedia)
   })
+
+  // Let other peers know when you leave
+  rc.on(RoomClient.EVENTS.exitRoom, () => {
+    ws.send(JSON.stringify({
+      type: "LEFT ROOM",
+      id: ApplicationState.id
+    }))
+  })
 }
 
 // Load mediaDevice options
@@ -119,8 +126,6 @@ navigator.mediaDevices.enumerateDevices().then(devices =>
 )
 
 // Creates a recorder object for recording media
-
-
 let recorder = null
 
 function createRecorder() {
@@ -129,3 +134,8 @@ function createRecorder() {
 }
 
 createRecorder()
+
+// Setup callback functions for when users connect and disconnect
+socket.on('newProducers', PCPair._newProducerCallbackExecutor);
+socket.on('newConsumers', PCPair._newConsumerCallbackExecutor);
+socket.on("consumerClosed", PCPair._closeConsumerCallbackExecutor);

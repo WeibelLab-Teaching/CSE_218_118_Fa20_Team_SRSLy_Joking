@@ -31,7 +31,9 @@ const DEFAULT_CLIENT_STATE = {
         [-1, 0, -1],
         [-1, 0, 1]
     ],
-    environment: "forest"
+    environment: "forest",
+    room: "118218",
+    xr: false
   }
   
   var AppState = {
@@ -54,28 +56,25 @@ wss.on('connection', function(conn) {
             let client_state = getClientState(conn.SRSLy_id);
             switch(type) {
 
-                case "HEADPOSE":
-                    // update client state
-                    AppState.clients[client_index].headpose = msg.T;
-                    // broadcast pose
-                    bcast(JSON.stringify({
-                        type:"HEADPOSE",
-                        id: conn.SRSLy_id,
-                        T: msg.T
-                    }))
+                case "POSE":
+                    // update client's headpose
+                    AppState.clients[client_index].headpose = msg.world.head;
+                    bcast(rawMessage, conn);
+
+                    // TODO: accumulate poses from all clients and send as one packet
                     break;
                 case "APPSTATE":
                     AppState.clients[client_index] = msg.content;
                     break;
-                case "BCAST":
-                case "BROADCAST":
-                    bcast(rawMessage);
-                    break;
                 case "SETUP":
                     verifyClient(conn, msg);
                     break;
+                case "BCAST":
+                case "BROADCAST":
+                case "RTC SOCKET ID":
                 default:
-                    console.error("[WebSocket] Unknown message type", type, "contents:", msg);
+                    bcast(rawMessage, conn);
+                    console.log("[WebSocket]", type, "message was forwarded to other clients");
                     break;
             }
         }
@@ -89,6 +88,10 @@ wss.on('connection', function(conn) {
 
     conn.on('close', function() {
         console.log("[Websocket] Connection with", conn.SRSLy_id, "closed");
+        bcast(JSON.stringify({
+            "type": "PEER DISCONNECT",
+            "id": conn.SRSLy_id
+        }));
         connections.splice(connections.indexOf(conn), 1);
     })
 })
@@ -98,9 +101,9 @@ wss.on('connection', function(conn) {
  * @param {object} sender The connection object that send the broadcast request
  * @param {string} rawMessage The message to broadcast
  */
-function bcast(sender, rawMessage) {
+function bcast(rawMessage, sender=null) {
     for (let conn of connections) {
-        if (sender && conn !== sender) {
+        if (!sender || conn !== sender) {
             conn.send(rawMessage);
         }
     }
@@ -144,6 +147,7 @@ function verifyClient(conn, setupMessage) {
 
             // Add to list of known connections
             connections.push(conn);
+            AppState.clients.push(DEFAULT_CLIENT_STATE);
             console.log("[Websocket] Verified client", id);
             return;
         }
@@ -159,7 +163,7 @@ function getClientState(id) {
 }
 
 function getClientIndex(id) {
-    return AppState.clients.map((c) => {return c.id}).indexOf(id);
+    return connections.map(c => c.SRSLy_id).indexOf(id);
 }
 
 module.exports = {
