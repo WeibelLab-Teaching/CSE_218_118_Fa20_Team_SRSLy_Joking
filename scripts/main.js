@@ -114,9 +114,24 @@ async function createScene(callback) {
 		floorMeshName: "ground"
 	});
 
-	// Set Sun
+	// Set Sun and Sky
 	let light = new BABYLON.HemisphericLight("sun", new BABYLON.Vector3(0, 1, 0), scene);
+	let skybox = BABYLON.Mesh.CreateBox("skybox", 1000, scene);
+	let skymat = new BABYLON.SkyMaterial("skyboxMaterial", scene);
+	skymat.backFaceCulling = false;
+	skymat.turbidity = 12;
+	skymat.luminance = .5;
+	skymat.inclination = 0.2;
+	skymat.azimuth = 0.29;
+	skymat.rayleigh = 2;
+	skymat.mieCoefficient = 0.005;
+	skymat.mieDirectionalG = 0.9;
 
+	// skymat.cameraOffset.y = scene.activeCamera.globalPosition.y;
+
+	skybox.material = skymat
+	
+	// new BABYLON.CubeTexture("assets/skybox1/TropicalSunnyDay", scene);
 
 	// Set UI Control panel
 	var guiManager = new BABYLON.GUI.GUI3DManager(scene);
