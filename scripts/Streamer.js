@@ -51,7 +51,7 @@ class Streamer {
 
         // Set/Generate Position
         if (!position) {
-            position = new BABYLON.Vector3(Math.random(-.5, .5), 2, Math.random(0.5, 1));
+            position = new BABYLON.Vector3(Math.random(-1, 1), 2, Math.random(0.5, 3));
         }
         console.log("[Streamer] Setting node at", position);
         this.mesh.position = position;
