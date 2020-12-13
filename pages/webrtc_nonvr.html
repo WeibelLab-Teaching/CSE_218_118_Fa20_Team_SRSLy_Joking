@@ -205,13 +205,18 @@
                     <i id="exit-icon" class="fas fa-phone-slash"></i>
                 </button>
             </div>
+            
+            <div class="col-md-2 text-center">
+                <button id='startRecordButton' type = 'button' class='btn btn-block btn-dark btn-lg hidden' onclick="recorder.start()"> 
+                    <i id="record-icon" class="fas fa-circle"></i>
+                </button>
+                <button id='stopRecordButton' type = 'button' class='btn btn-block btn-danger btn-lg hidden' onclick="recorder.stop()"> 
+                    <i id="record-icon" class="fas fa-circle"></i>
+                </button>
+            </div>
         </div>
         
         <br />
-
-        <button onclick="createRecorder()"> create recorder </button>
-        <button onclick="recorder.start()"> start recorder </button>
-        <button onclick="recorder.stop()"> stop recorder </button>
     </div>
 
 
