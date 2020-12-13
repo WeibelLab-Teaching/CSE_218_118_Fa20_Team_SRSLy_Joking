@@ -35,7 +35,7 @@ class Recorder {
         this.chunks = []
 
         // intiates the recorder
-        this.mediaRecorder = new MediaRecorder(stream);
+        this.mediaRecorder = new MediaRecorder(stream, {mimeType: 'audio/ogg; codecs=opus'});
 
         // below code is used to save the audio, taken from https://developer.mozilla.org/en-US/docs/Web/API/MediaRecorder
         this.mediaRecorder.onstop = function(e) {
@@ -66,7 +66,8 @@ class Recorder {
 
 
         // intiates the recorder
-        this.mediaRecorder = new MediaRecorder(stream);
+        this.mediaRecorder = new MediaRecorder(stream, {mimeType: 'audio/ogg; codecs=opus'});
+        console.log(this.mediaRecorder)
 
         // below code is used to save the audio, taken from https://developer.mozilla.org/en-US/docs/Web/API/MediaRecorder
         this.mediaRecorder.onstop = function(e) {
@@ -119,19 +120,19 @@ class Recorder {
         console.log("data available after MediaRecorder.stop() called.");
       
         var clipName = prompt('Enter a name for your sound clip');
-  
+
         var i;
-        for(i = 0; i < this.chunks.length; i++) {
+        for(i = -1; i < this.chunks.length; i++) {
 
             var clipContainer = document.createElement('article');
             var clipLabel = document.createElement('p');
             var audio = document.createElement('audio');
             var deleteButton = document.createElement('button');
+            var link = document.createElement("a"); 
            
             clipContainer.classList.add('clip');
             audio.setAttribute('controls', '');
             deleteButton.innerHTML = "Delete";
-            clipLabel.innerHTML = clipName + i;
       
             clipContainer.appendChild(audio);
             clipContainer.appendChild(clipLabel);
@@ -139,8 +140,17 @@ class Recorder {
             soundClips.appendChild(clipContainer);
       
             audio.controls = true;
-            var blob = new Blob([this.chunks[i]], { 'type' : this.chunks[i].type});
-            var audioURL = URL.createObjectURL(blob);
+
+
+            if(i == -1) {
+                var blob = new Blob(this.chunks, {'type' : 'audio/ogg; codecs=opus'});
+                var audioURL = URL.createObjectURL(blob);
+        
+            } else {
+                var blob = new Blob([this.chunks[i]], {'type' : 'audio/ogg; codecs=opus'});
+                var audioURL = URL.createObjectURL(blob);
+            }
+
             audio.src = audioURL;
             console.log("recorder stopped");
       
@@ -153,7 +163,13 @@ class Recorder {
     
             var link = document.createElement("a"); // Or maybe get it from the current document
             link.href = audioURL;
-            link.download = clipName + ".mp3";
+            if(i == -1) {
+                clipLabel.innerHTML = clipName + "_full";
+                link.download = clipName + "_full.ogg";
+            } else {
+                clipLabel.innerHTML = clipName + "_" + i;
+                link.download = clipName + ".mp3";
+            }
             link.innerHTML = "Click here to download the file";
             clipContainer.appendChild(link); // Or append it whereever you want
         }
