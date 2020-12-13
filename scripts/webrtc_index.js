@@ -47,6 +47,10 @@ function roomOpen() {
   reveal(exitButton)
   control.className = ''
   reveal_nostyle(videoMedia)
+
+  
+  reveal(startRecordButton)
+  hide(stopRecordButton)
 }
 
 function hide(elem) {
@@ -56,6 +60,11 @@ function hide(elem) {
 function reveal(elem) {
   elem.className = 'btn btn-block btn-dark btn-lg'
 }
+
+function reveal_red(elem) {
+  elem.className = 'btn btn-block btn-danger btn-lg'
+}
+
 
 function reveal_nostyle(elem) {
   elem.className = ''
@@ -104,6 +113,16 @@ function addListeners() {
       type: "LEFT ROOM",
       id: ApplicationState.id
     }))
+  })
+
+  
+  rc.on(RoomClient.EVENTS.startRecord, () => {
+    hide(startRecordButton)
+    reveal_red(stopRecordButton)
+  })
+  rc.on(RoomClient.EVENTS.stopRecord, () => {
+    hide(stopRecordButton)
+    reveal(startRecordButton)
   })
 }
 
