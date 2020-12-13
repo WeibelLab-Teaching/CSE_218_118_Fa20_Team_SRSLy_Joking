@@ -10,6 +10,8 @@ var userLHand;
 var userRHand;
 var webRTCStreamer = undefined;
 
+var playSpace = new PlaySpace();
+
 
 var recordButton;
 
@@ -136,10 +138,10 @@ async function createScene(callback) {
 	let toggleEnvironmentButton = new BABYLON.GUI.HolographicButton("Environment Button");
 	guiPanel.addControl(toggleEnvironmentButton);
 	toggleEnvironmentButton.onPointerUpObservable.add(Environment.onEnvironmentClicked);
-	// play button
-	let playButton = new BABYLON.GUI.HolographicButton("Play Button");
-	guiPanel.addControl(playButton);
-	playButton.onPointerUpObservable.add(() => {for (let streamer of ApplicationState.streamers) {streamer.play()}});
+	// play area button
+	let playareaButton = new BABYLON.GUI.HolographicButton("Play Area Button");
+	guiPanel.addControl(playareaButton);
+	playareaButton.onPointerUpObservable.add(playSpace.enterPlaySpaceConfigurator.bind(playSpace));
 	// connect to meeting button
 	let joinButton = new BABYLON.GUI.HolographicButton("Join Button");
 	guiPanel.addControl(joinButton);
@@ -163,12 +165,12 @@ async function createScene(callback) {
 	envText.color = "white";
 	envText.fontSize = 30;
 	toggleEnvironmentButton.content = envText;
-	// play
-	let playText = new BABYLON.GUI.TextBlock();
-	playText.text = "Play Debug";
-	playText.color = "white";
-	playText.fontSize = 30;
-	playButton.content = playText;
+	// play area
+	let playareaText = new BABYLON.GUI.TextBlock();
+	playareaText.text = "Set Play Space";
+	playareaText.color = "white";
+	playareaText.fontSize = 30;
+	playareaButton.content = playareaText;
 	// connect to meeting button
 	let connectText = new BABYLON.GUI.TextBlock();
 	connectText.text = "Join Meeting";
@@ -224,6 +226,8 @@ window.onload = function () {
 			sendPose();
 			// Connect to WebRTC
 			joinRoom(ApplicationState.id, ApplicationState.room);
+			// Load playspace
+			playSpace.loadFromAppState();
 		});
 	});
 }
