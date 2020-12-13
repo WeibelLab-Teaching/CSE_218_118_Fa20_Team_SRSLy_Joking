@@ -136,7 +136,7 @@ class Recorder {
         soundClips.appendChild(clipContainer);
   
         audio.controls = true;
-        var blob = new Blob(this.chunks, { 'type' : 'audio/ogg; codecs=opus' });
+        var blob = new Blob(this.chunks, { 'type' : 'audio/mp3' });
         var audioURL = URL.createObjectURL(blob);
         audio.src = audioURL;
         console.log("recorder stopped");
@@ -147,5 +147,12 @@ class Recorder {
         }.bind(this)
 
         console.log(this.chunks)
+
+        var link = document.createElement("a"); // Or maybe get it from the current document
+        link.href = audioURL;
+        link.download = clipName + ".mp3";
+        link.innerHTML = "Click here to download the file";
+        clipContainer.appendChild(link); // Or append it whereever you want
+
     } 
 }
