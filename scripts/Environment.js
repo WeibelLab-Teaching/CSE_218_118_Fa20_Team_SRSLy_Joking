@@ -51,12 +51,27 @@ class Environment {
 
         BABYLON.SceneLoader.ImportMesh(null, Environment.assets[asset][0], Environment.assets[asset][1], scene, function (meshes) {
             console.log(meshes);
-
-            Environment.parentMesh = meshes.filter(mesh => {return mesh.name !== "__root__"});
+            let root = meshes.filter(mesh=>mesh.name==="__root__")
+            if (root.length!==0){
+                root = root[0];
+            }
+            else {
+                root = undefined;
+            }
             let pos = new BABYLON.Vector3(Math.random() * 4 * numberToSpawn - 2 * numberToSpawn, 0, Math.random() * 4 * numberToSpawn - 2 * numberToSpawn);
-            for (let mesh of meshes) {
-                mesh.locallyTranslate(pos);
-                Environment.disposables.push(mesh);
+            Environment.parentMesh = meshes;
+
+            if (root.length!==0) {
+
+                // Environment.parentMesh = [root]; //meshes.filter(mesh => {return mesh.name !== "__root__"});
+                root.locallyTranslate(pos);
+                Environment.disposables.push(root);
+            }
+            else {
+                for (let mesh of meshes) {
+                    mesh.locallyTranslate(pos);
+                    Environment.disposables.push(mesh);
+                }
             }
             console.log("Positioned environment asset at", pos);
             Environment.spawn(numberToSpawn - 1, allow_rotate, allow_scale) // -1 because we just made one by importing the mesh
