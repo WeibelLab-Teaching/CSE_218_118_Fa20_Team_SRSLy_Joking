@@ -27,6 +27,7 @@
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
     "express": "^4.17.1",
+    "express-fileupload": "^1.2.0",
     "http-errors": "~1.6.3",
     "jquery": "^3.5.1",
     "mathjs": "^8.0.1",

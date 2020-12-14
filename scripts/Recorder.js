@@ -15,6 +15,36 @@ class Recorder {
 
         // checks if we are currently recording
         this.isRecording = false
+
+        this.mimeType = ""
+        // Chrome
+        if (MediaRecorder.isTypeSupported("audio/webm;codecs=pcm")) {
+            this.mimeType = "audio/webm;codecs=pcm"
+        // Firefox
+        } else if (MediaRecorder.isTypeSupported("audio/vorbis")) {
+            this.mimeType = "audio/vorbis"
+
+        // else just try wav
+        } else if (MediaRecorder.isTypeSupported("audio/wav")) {
+            this.mimeType = "audio/wav"
+        
+        // else just try ogg opus
+        } else if (MediaRecorder.isTypeSupported("audio/ogg;codecs=opus")) {
+            this.mimeType = "audio/ogg;codecs=opus"
+
+        // all else fails, just use webm
+        } else {
+            this.mimeType = "audio/webm"
+        }
+        console.log("Mimetype for this browser:", this.mimeType)
+
+        this.options = {
+            mimeType: this.mimeType,
+            audioBitsPerSecond : 128000,
+            videoBitsPerSecond : 2500000,
+            audioBitrateMode: "cbr"
+        }
+
     }
 
     // ONly happens when a user presses the stop record button
@@ -35,7 +65,9 @@ class Recorder {
         this.chunks = []
 
         // intiates the recorder
-        this.mediaRecorder = new MediaRecorder(stream, {mimeType: 'audio/ogg; codecs=opus'});
+        this.mediaRecorder = new MediaRecorder(stream, {mimeType: this.mimeType, });
+
+        console.log(this.mediaRecorder)
 
         // below code is used to save the audio, taken from https://developer.mozilla.org/en-US/docs/Web/API/MediaRecorder
         this.mediaRecorder.onstop = function(e) {
@@ -66,7 +98,7 @@ class Recorder {
 
 
         // intiates the recorder
-        this.mediaRecorder = new MediaRecorder(stream, {mimeType: 'audio/ogg; codecs=opus'});
+        this.mediaRecorder = new MediaRecorder(stream, {mimeType: this.mimeType});
         console.log(this.mediaRecorder)
 
         // below code is used to save the audio, taken from https://developer.mozilla.org/en-US/docs/Web/API/MediaRecorder
@@ -143,11 +175,11 @@ class Recorder {
 
 
             if(i == -1) {
-                var blob = new Blob(this.chunks, {'type' : 'audio/ogg; codecs=opus'});
+                var blob = this.getConcatenatedBlob();
                 var audioURL = URL.createObjectURL(blob);
         
             } else {
-                var blob = new Blob([this.chunks[i]], {'type' : 'audio/ogg; codecs=opus'});
+                var blob = new Blob([this.chunks[i]], {'type' : this.mimeType});
                 var audioURL = URL.createObjectURL(blob);
             }
 
@@ -165,15 +197,24 @@ class Recorder {
             link.href = audioURL;
             if(i == -1) {
                 clipLabel.innerHTML = clipName + "_full";
-                link.download = clipName + "_full.ogg";
+                link.download = clipName + "_full.weba";
             } else {
                 clipLabel.innerHTML = clipName + "_" + i;
-                link.download = clipName + ".mp3";
+                link.download = clipName + ".weba";
             }
             link.innerHTML = "Click here to download the file";
             clipContainer.appendChild(link); // Or append it whereever you want
         }
-        
-
     } 
+    getConcatenatedBlob() {
+    //     var blobs = []
+    //     var j;
+    //     for (j = 0; j < this.chunks.length; j++) {
+    //         blobs.push(new Blob([this.chunks[j]], {'type' : this.mimeType}))
+    //     }
+        
+        var concatenatedBlob = new Blob(this.chunks, {'type' : this.mimeType});
+        console.log(concatenatedBlob)
+        return concatenatedBlob
+    }
 }
