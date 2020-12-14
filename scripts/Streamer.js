@@ -1,78 +1,125 @@
+/*
+================================================================================
+        Streamer Parent Class
+================================================================================
+Video and Avatar streamers will inherit from this class
+
+Responsible for:
+- managing Audio/Video sources
+- managing WebRTC and Websocket unique identifiers
+- setting billboarding/following behavior
+*/
+
 class Streamer {
-    constructor(video, scene, resolution = [1920, 1080], height = 0.3, position=null) {
-        this.name = "video" + ApplicationState.streamers.length;
-        this.src = video;
+
+
+    // ==========	Static Properties	==========
+    static get streamers() {
+        return ApplicationState.streamers;
+    }
+
+    // ==========   Instance Properties	==========
+    name;
+    videoSrc;
+    audioSrc;
+    scene;
+    mesh;
+    follower;
+    pcpair;
+    xr;
+
+    // ==========	Getter and Setter Properties	==========
+    get position() {return this.mesh.position;}
+    set position(value) {this.mesh.position = value;}
+    get rotation() {return this.mesh.rotation;}
+    set rotation(value) {this.mesh.rotation = value;}
+
+
+    // ==========	Creating and Destroying	==========
+    // constructor, destructor, serialize, deserialize
+    constructor(scene, momentum, pair, position=undefined) {
+        this.name = "Streamer" + ApplicationState.streamers.length;
         this.scene = scene;
+        this.mesh = new BABYLON.TransformNode(this.name, this.scene);
+        this.mesh.scail
+        this.videoSrc = undefined;
+        this.audioSrc = undefined;
+        this.pcpair = pair;
+        this.xr = undefined;
+        this._disposables = [];
+        this._disposables.push(this.mesh);
 
-        // Create a material from the video
-        let material = new BABYLON.StandardMaterial(this.name + "Mat", scene);
-        let texture = new BABYLON.VideoTexture(this.name, video, scene, true, false);
-        material.diffuseTexture = texture;
-
-        // Create Mesh
-        this.mesh = BABYLON.Mesh.CreatePlane(this.name + "Plane", 1, scene);
-        this.mesh.material = material;
-
-        // Position Mesh
-        this.mesh.scaling.y = height;
-        this.mesh.scaling.x = this.mesh.scaling.y * resolution[0] / resolution[1]; // set aspect ratio
-        if (position) {
-            this.mesh.position = position;
+        // Set/Generate Position
+        if (!position) {
+            position = new BABYLON.Vector3(Math.random(-.5, .5), 2, Math.random(0.5, 1));
         }
-        else {
-            let pos = new BABYLON.Vector3(Math.random(-.5, .5), 2, Math.random(0.5, 1));
-            this.mesh.position = pos;
-        }
-
-        // Make sure it's always illuminated
-        this.light = new BABYLON.PointLight(name + "PlaneLight", this.mesh.position.add(new BABYLON.Vector3(0, 0, .2)), scene);
-        this.light.parent = this.mesh;
-
-        // Billboard
-        this.scene.onBeforeRenderObservable.add(function () {
-            this.mesh.lookAt(this.scene.activeCamera.position, Math.PI)
-        }.bind(this));
+        console.log("[Streamer] Setting node at", position);
+        this.mesh.position = position;
 
         // Setup mesh for following
-        this.follower = new Follower(this.mesh, p /*scene.activeCamera*/ );
+        this.follower = new Follower(this.mesh, momentum, scene);
+        // this.follower.billboard(true);
+
+        // Add to list
+        console.log("[Streamer] Created Streamer", this.name);
+        Streamer.streamers.push(this);
+
+        // Destroy when WebRTC connection is lost
+        this.pcpair.addDestructorCallback(this.destructor.bind(this));
     }
 
     destructor() {
         // Remove mesh from Scene
-        this.mesh.dispose();
-        this.light.dispose();
+        for (let disposable of this._disposables) {
+            disposable.dispose();
+        }
 
-        // Remove video elm from DOM
-        document.getElementById("streams").removeChild(this.src)
+        // Remove DOM elements - let WebRTC handle this?
+        // for (let elm of this.pcpair.getDOMElements()) {
+
+        // }
 
         // Remove listeners
         this.follower.destructor();
+
+        // Remove from list of streamers
+        Streamer.streamers.splice(Streamer.streamers.indexOf(this));
     }
+
 
     serialize() {
         return {
-            uri: this.src.src,
-            transform: this.mesh.getWorldMatrix().toAarray()
+            type: "Streamer",
+            xr: this.xr,
+            transform: this.mesh.getWorldMatrix().toAarray(),
+            pair: this.pcpair.serialize()
         }
     }
 
-    static deserialize(serial) {
-        console.log("Deserializing Streamer", serial);
-        let streamsContainer = document.getElementById("streams");
-        let video = document.createElement("video");
-        video.setAttribute("src", serial.uri);
-        streamsContainer.appendChild(video);
+    static deserializeAmbiguous(scene, momentum, serial) {
+        switch (serial.type) {
+            case "Streamer":
+                return Streamer.deserialize(scene, momentum, serial);
+            case "AvatarStreamer":
+                return AvatarStreamer.deserialize(scene, momentum, serial);
+            case "VideoStreamer":
+                return VideoStreamer.deserialize(scene, momentum, serial);
+            default:
+                console.error("Cannot Deserialize unknown type:", serial.type);
+                return null;
+        }
+    }
 
-        // Set position
+    static deserialize(scene, momentum, serial) {
+        let pair = PCPair.deserialize(serial.pair);
         let transformationMatrix = BABYLON.Matrix.FromValues(
             serial.transform[0], serial.transform[1], serial.transform[2], serial.transform[3], 
             serial.transform[4], serial.transform[5], serial.transform[6], serial.transform[7], 
             serial.transform[8], serial.transform[9], serial.transform[10], serial.transform[11], 
             serial.transform[12], serial.transform[13], serial.transform[14], serial.transform[15]);
 
-        // Create Streamer object
-        console.log("Creating Streamer at", transformationMatrix.getTranslation());
-        let streamer = new Streamer(video, scene, [1920, 1080], 0.3, transformationMatrix.getTranslation());
+
+        let streamer = new Streamer(scene, momentum, pair, transformationMatrix.getTranslation());
 
         // Set to follow
         if (ApplicationState.following) {
@@ -88,13 +135,6 @@ class Streamer {
 
     get rotation() {
         return this.mesh.absoluteRotationQuaternion;
-    }
-
-    play() {
-        this.src.play();
-    }
-    pause() {
-        this.src.pause();
     }
 
     toggleFollow() {

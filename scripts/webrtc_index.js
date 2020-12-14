@@ -7,10 +7,9 @@ if (location.href.substr(0, 5) !== 'https')
 
 const socket = io()
 
-
 let producer = null;
 
-nameInput.value = 'bob' + Math.round(Math.random() * 1000)
+// nameInput.value = 'bob' + Math.round(Math.random() * 1000)
 
 socket.request = function request(type, data = {}) {
   return new Promise((resolve, reject) => {
@@ -47,14 +46,18 @@ function roomOpen() {
   hide(stopScreenButton)
   reveal(exitButton)
   control.className = ''
-  reveal(videoMedia)
+  reveal_nostyle(videoMedia)
 }
 
 function hide(elem) {
-  elem.className = 'hidden'
+  elem.className = 'btn btn-block btn-dark btn-lg hidden'
 }
 
 function reveal(elem) {
+  elem.className = 'btn btn-block btn-dark btn-lg'
+}
+
+function reveal_nostyle(elem) {
   elem.className = ''
 }
 
@@ -91,8 +94,16 @@ function addListeners() {
   })
   rc.on(RoomClient.EVENTS.exitRoom, () => {
     hide(control)
-    reveal(login)
+    reveal_nostyle(login)
     hide(videoMedia)
+  })
+
+  // Let other peers know when you leave
+  rc.on(RoomClient.EVENTS.exitRoom, () => {
+    ws.send(JSON.stringify({
+      type: "LEFT ROOM",
+      id: ApplicationState.id
+    }))
   })
 }
 
@@ -113,3 +124,9 @@ navigator.mediaDevices.enumerateDevices().then(devices =>
     el.appendChild(option)
   })
 )
+
+
+// Setup callback functions for when users connect and disconnect
+socket.on('newProducers', PCPair._newProducerCallbackExecutor);
+socket.on('newConsumers', PCPair._newConsumerCallbackExecutor);
+socket.on("consumerClosed", PCPair._closeConsumerCallbackExecutor);

@@ -64,6 +64,24 @@ class Momentum {
         })
         return avg;
     }
+
+    calculateRelativePose(x, outputType="babylon") {
+        let poi = Pose.MatrixFromBabylonMatrix(x.getWorldMatrix());
+        let relativeTo = this.pose;
+
+        let relative = math.multiply( math.inv(relativeTo), poi );
+
+        switch (outputType) {
+            case "babylon":
+                return Pose.MatrixToBabylon(relative);
+            case "pose":
+                return new Pose(relative);
+            case "matrix":
+            default:
+                return relative;
+        }
+        return relative;
+    }
 }
 
 /**
@@ -151,5 +169,21 @@ class Pose {
      */
     get rotationMatrix() {
         return this.T.subset(math.index(math.range(0, 3), math.range(0, 3)));
+    }
+
+    static MatrixFromBabylonMatrix(babMat) {
+        let v = babMat.toArray();
+        let mat = math.matrix([
+            [v[0], v[4], v[8], v[12]],
+            [v[1], v[5], v[9], v[13]],
+            [v[2], v[6], v[10], v[14]],
+            [v[3], v[7], v[11], v[15]]
+        ])
+        return mat;
+    }
+
+    static MatrixToBabylon(mat) {
+        let transposedValues = math.transpose(mat).reshape([16]).toArray();
+        return BABYLON.Matrix.FromArray(transposedValues);
     }
 }

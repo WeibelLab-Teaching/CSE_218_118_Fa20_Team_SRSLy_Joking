@@ -4,8 +4,22 @@ var engine = undefined;
 var scene = undefined;
 var xr = undefined;
 var xrHelper = undefined;
-var treeMesh = undefined;
 var p = undefined;
+var userCamera;
+var userLHand;
+var userRHand;
+var webRTCStreamer = undefined;
+
+
+var recordButton;
+
+// TEMP: For debugging
+var skeleton;
+var mesh;
+// setTimeout(() => {
+// 	skeleton = ApplicationState.streamers[1].skeleton;
+// 	mesh = ApplicationState.streamers[1].mesh;
+// }, 2000);
 
 /**
  * Add features to the ApplicationState variable as you desire
@@ -22,7 +36,8 @@ var ApplicationState = {
 		[-1, 0, -1],
 		[-1, 0, 1]
 	],
-	environment: null
+	environment: null,
+	xr: false
 }
 
 // webRTCStreamer: the stream of other peers
@@ -42,15 +57,52 @@ async function createScene(callback) {
 	// Setup scene
 	scene = new BABYLON.Scene(engine);
 	xr = await scene.createDefaultXRExperienceAsync();
-	xrHelper = new BABYLON.VRExperienceHelper(scene)
+	xrHelper = new BABYLON.VRExperienceHelper(scene);
 
-	// Set cursor options
-	if (true || 'no controllers exist / is phone VR') {
+	// Get User objects
+	userCamera = scene.cameras.filter(c=>c.name==="deviceOrientationVRHelper")[0];
+	console.log("User has", Object.keys(userCamera.inputs.attached), "input devices");
+	userLHand = undefined;
+	userRHand = undefined;
 
-		xrHelper.setLaserColor(new BABYLON.Color3(1, 0, 0));
-		xrHelper.setGazeColor(new BABYLON.Color3(0, 1, 0));
-		xrHelper.enableInteractions()
-	}
+	// Control VR state
+	xrHelper.setLaserColor(new BABYLON.Color3(1, 0, 0));
+	xrHelper.setGazeColor(new BABYLON.Color3(0, 1, 0));
+	xrHelper.enableInteractions();
+	
+	xrHelper.onEnteringVR.add(() => {
+		// Look for controllers
+		xrHelper.onControllerMeshLoadedObservable.add(() => {
+			// Get controllers
+			console.log("Got controllers");
+			userLHand = xrHelper._leftController;
+			userRHand = xrHelper._rightController;
+		});
+
+		// Set as xr user
+		if ('avatarModel' in ApplicationState) {
+			ApplicationState.xr = true;
+			PCPair.announceIds();
+			pushAppState();
+		}
+		chooseAvatar((uri) => {
+			ApplicationState["avatarModel"] = uri;
+			ApplicationState.xr = true;
+			PCPair.announceIds();
+			pushAppState();
+		})
+	})
+
+	xrHelper.onExitingVR.add(() => {
+		// Remove Controllers
+		userLHand = undefined;
+		userRHand = undefined;
+
+		// Set as non-xr user
+		ApplicationState.xr = false;
+		PCPair.announceIds();
+		pushAppState();
+	});
 
 	// Set Ground Plane
 	let ground = BABYLON.MeshBuilder.CreateGround("ground", {
@@ -62,12 +114,9 @@ async function createScene(callback) {
 	xrHelper.enableTeleportation({
 		floorMeshName: "ground"
 	});
-	// give ambient light coming up from ground
-	let ambientlight = new BABYLON.HemisphericLight("light0", new BABYLON.Vector3(0, 1, 0), scene);
 
 	// Set Sun
-	let light = new BABYLON.DirectionalLight("light1", new BABYLON.Vector3(0, -1, 0), scene);
-	//light.intensity = 30;
+	let light = new BABYLON.HemisphericLight("sun", new BABYLON.Vector3(0, 1, 0), scene);
 
 
 	// Set UI Control panel
@@ -89,7 +138,7 @@ async function createScene(callback) {
 	// change environment button
 	let toggleEnvironmentButton = new BABYLON.GUI.HolographicButton("Environment Button");
 	guiPanel.addControl(toggleEnvironmentButton);
-	toggleEnvironmentButton.onPointerUpObservable.add(onEnvironmentClicked);
+	toggleEnvironmentButton.onPointerUpObservable.add(Environment.onEnvironmentClicked);
 	// play button
 	let playButton = new BABYLON.GUI.HolographicButton("Play Button");
 	guiPanel.addControl(playButton);
@@ -98,6 +147,10 @@ async function createScene(callback) {
 	let joinButton = new BABYLON.GUI.HolographicButton("Join Button");
 	guiPanel.addControl(joinButton);
 	joinButton.onPointerUpObservable.add(onMeetingJoin);
+	// Record button
+	recordButton = new BABYLON.GUI.HolographicButton("Record");
+	guiPanel.addControl(recordButton);
+	recordButton.onPointerUpObservable.add(onRecordPressed);
 
 
 	//// add text
@@ -125,40 +178,12 @@ async function createScene(callback) {
 	connectText.color = "white";
 	connectText.fontSize = 30;
 	joinButton.content = connectText;
-
-
-
-
-	// // TEMP: Add a button for testing
-	// var testPanel = new BABYLON.GUI.StackPanel3D();
-	// testPanel.margin = 0.02;
-	// guiManager.addControl(testPanel);
-	// testPanel.node.scaling = new BABYLON.Vector3(0.5, 0.5, 0.5);
-	// testPanel.position.z = 1;
-	// testPanel.position.y = 1;
-	// testPanel.node.rotation = new BABYLON.Vector3(Math.PI/3, 0, 0);
-
-	// let testButton = new BABYLON.GUI.HolographicButton("Test Button");
-	// testPanel.addControl(testButton);
-	// testButton.onPointerUpObservable.add(() => {
-	// 	let advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
-	// 	let text = new BABYLON.GUI.TextBlock();
-	// 	text.text = "Clicked";
-	// 	text.color = "black";
-	// 	text.fontSize = 40;
-	// 	advancedTexture.addControl(text);
-	// 	setTimeout(() => {
-	// 		advancedTexture.dispose()
-	// 	}, 2000)
-	// });
-
-	// //// add text
-	// // follow
-	// let testButtonText = new BABYLON.GUI.TextBlock();
-	// testButtonText.text = "Test Button";
-	// testButtonText.color = "white";
-	// testButtonText.fontSize = 30;
-	// testButton.content = testButtonText;
+	// Record
+	let recordText = new BABYLON.GUI.TextBlock();
+	recordText.text = "Record";
+	recordText.color="white";
+	recordText.fontSize = 30;
+	recordButton.content = recordText;
 
 	if (callback) {
 		callback(scene);
@@ -198,33 +223,12 @@ window.onload = function () {
 
 		// Establish Websocket connection and load ApplicationState
 		EstablishWebsocketConnection((conn) => {
-			// TEMP: Addd sample streamer
-			// addStreamer("assets/samplevid.mp4")
-		})
+			// Send user pose
+			sendPose();
+			// Connect to WebRTC
+			joinRoom(ApplicationState.id, ApplicationState.room);
+		});
 	});
-}
-
-/**
- * Adds a video stream to the scene
- * TODO: connect to WebRTC @eric
- * @param {string} uri the path to the video to stream (eg: assets/samplevid.mp4 or https://path.to.webrtc/uuid)
- */
-function addStreamer(video) {
-	// Create <video> tag in html
-	// TODO: hook up <video> tag to WebRTC
-	// let streamsContainer = document.getElementById("streams");
-	// let video = document.createElement("video");
-	// video.setAttribute("src", uri);
-	// streamsContainer.appendChild(video);
-	let positionOfStreamer = getStreamerPosition(video);
-	// Add to app state
-	let streamer = new Streamer(video, scene, [1920, 1080], 0.3, positionOfStreamer);
-	ApplicationState.streamers.push(streamer);
-
-	// Set to follow
-	if (ApplicationState.following) {
-		streamer.follower.enable();
-	}
 }
 
 function removeStreamer(uri_or_video_elm) {
@@ -280,66 +284,6 @@ function onFollowClicked() {
 	}
 }
 
-/**
- * Behavior to invoke when the environment button is clicked
- * TODO: show a series of options: AR, Forest, Office, etc.
- */
-function onEnvironmentClicked() {
-	console.log("Change Environment");
-
-	// TEMP: randomly spawn trees
-	spawnTrees();
-}
-
-/**
- * Spawns trees into the scene and sets the ground plane texture
- * To improve performance, 1 tree model is loaded, 
- * all other 'spawned' trees are instances of the first.
- * @param {int} numberToSpawn The number of trees to spawn
- */
-function spawnTrees(numberToSpawn = 15) {
-	function spawn(numberToSpawn) {
-		// spawn a bunch of trees
-		let pos;
-
-		for (let i = 0; i < numberToSpawn; i++) {
-			pos = new BABYLON.Vector3(Math.random() * 4 * numberToSpawn - 2 * numberToSpawn, 0, Math.random() * 4 * numberToSpawn - 2 * numberToSpawn);
-			while (isInPlayArea(pos.asArray())) {
-				console.log(`position (${pos.x}, ${pos.y}, ${pos.z}) is in play area`);
-				pos = new BABYLON.Vector3(Math.random() * 4 * numberToSpawn - 2 * numberToSpawn, 0, Math.random() * 4 * numberToSpawn - 2 * numberToSpawn);
-			}
-
-			for (let j = 0; j < treeMesh.length; j++) {
-				let instance = treeMesh[j].createInstance(`Tree${i}_part${j}`);
-				instance.locallyTranslate(pos);
-			}
-			//console.log(`Spawned Tree${i} at (${pos.x}, ${pos.y}, ${pos.z})`);
-		}
-	}
-
-
-	if (!treeMesh) {
-		BABYLON.SceneLoader.ImportMesh("", "/assets/", "Tree2.glb", scene, function (meshes) {
-			console.log("Loaded at", meshes.map((m) => {
-				return m.position
-			}));
-
-			treeMesh = meshes;
-			let pos = new BABYLON.Vector3(Math.random() * 4 * numberToSpawn - 2 * numberToSpawn, 0, Math.random() * 4 * numberToSpawn - 2 * numberToSpawn);
-			for (mesh of meshes) {
-				mesh.locallyTranslate(pos);
-			}
-			spawn(numberToSpawn - 1) // -1 because we just made one by importing the mesh
-		});
-
-		// Set Ground texture
-		let groundMaterial = new BABYLON.StandardMaterial("groundMat", scene);
-		groundMaterial.diffuseTexture = new BABYLON.Texture("/assets/ground/Color.jpg", scene);
-		scene.getMeshesByID("ground")[0].material = groundMaterial;
-	} else {
-		spawn(numberToSpawn);
-	}
-}
 
 /**
  * checks if a point is in the play area
@@ -347,14 +291,13 @@ function spawnTrees(numberToSpawn = 15) {
  * @param {array} point the point to check as an array [x, y, z] eg: [1, 2, 3]
  */
 function isInPlayArea(point) {
-
 	let inside = false;
-	for (let i = 0, j = ApplicationState.playArea.length - 1; i < ApplicationState.playArea.length; j = i++) {
-		let xi = ApplicationState.playArea[i][0];
-		let zi = ApplicationState.playArea[i][2];
+	for (let i = 0, j = ApplicationState.play_area.length - 1; i < ApplicationState.play_area.length; j = i++) {
+		let xi = ApplicationState.play_area[i][0];
+		let zi = ApplicationState.play_area[i][2];
 
-		let xj = ApplicationState.playArea[j][0];
-		let zj = ApplicationState.playArea[j][2];
+		let xj = ApplicationState.play_area[j][0];
+		let zj = ApplicationState.play_area[j][2];
 
 		let intersect = ((zi > point[2]) != (zj > point[2])) &&
 			(point[0] < (xj - xi) * (point[2] - zi) / (zj - zi) + xi);
@@ -371,9 +314,30 @@ function onMeetingJoin(roomid=123) {
 	
 }
 
+var recording = false;
+function onRecordPressed() {
+	recording = !recording;
+	console.log("Now Recording", recording);
+
+	// Update text
+	if (recording) {
+		recordButton.content.text = "RECORDING";
+		recordButton.plateMaterial.diffuseColor = new BABYLON.Color3(1, 0, 0)
+	}
+	else {
+		recordButton.content.text = "Record";
+		recordButton.plateMaterial.diffuseColor = new BABYLON.Color3(1, 1, 1)
+	}
+
+	// TODO: Implement acutal recording
+}
+
 
 
 function SetApplicationState(state) {
+	// TODO: remove all of the old stuff
+
+
 	ApplicationState = state;
 
 	// Load Streamers
@@ -382,9 +346,14 @@ function SetApplicationState(state) {
 	}
 
 	// Load Environment
+	console.log("Setting environment to", ApplicationState.environment);
 	switch(ApplicationState.environment) {
 		case "forest":
-			spawnTrees();
+			Environment.setupEnvironment("forest", "tree", false, false);
+			break;
+		case "beach":
+			Environment.setupEnvironment("beach", "rock", true, true);
+			break;
 		default:
 			break;
 	}

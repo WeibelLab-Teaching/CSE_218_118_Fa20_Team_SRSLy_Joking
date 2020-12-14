@@ -2,11 +2,12 @@
  * Class for making on object follow another
  */
 class Follower {
-    constructor(mesh, target) {
+    constructor(mesh, target, scene) {
         this.mesh = mesh;
         this.target = target;
-        this.scene = mesh.scene;
+        this.scene = scene;
         this.isFollowing = false;
+        this.isBillboarding = false;
         this.initialOffset = null;
         this.referenceNode = null;
     }
@@ -36,6 +37,27 @@ class Follower {
         this.mesh.position.x = pos[0];
         this.mesh.position.y = pos[1];
         this.mesh.position.z = pos[2];
+    }
+
+    billboard(enable=true) {
+        if (enable && !this.isBillboarding) {
+            this.scene.onBeforeRenderObservable.add(this._billboard_logic.bind(this));
+            this.isBillboarding = true;
+        }
+        else if (enable && this.isBillboarding) {
+            // Do nothing - already billboarding
+        }
+        else if (!enable && this.isBillboarding) {
+            this.scene.onBeforeRenderObservable.remove(this._billboard_logic.bind(this));
+            this.isBillboarding = false;
+        }
+        else {
+            // Do nothing - billboarding already disabled.
+        }
+    }
+
+    _billboard_logic() {
+        this.mesh.lookAt(this.scene.activeCamera.position, Math.PI)
     }
 
     /**
