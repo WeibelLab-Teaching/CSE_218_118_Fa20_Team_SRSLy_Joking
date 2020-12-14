@@ -25,12 +25,15 @@ const DEFAULT_CLIENT_STATE = {
         //     ]
         // }
     ],
-    play_area: [
-        [1, 0, 1],
-        [1, 0, -1],
-        [-1, 0, -1],
-        [-1, 0, 1]
-    ],
+    play_area: {
+        "border":[
+            [1, 0, 1],
+            [1, 0, -1],
+            [-1, 0, -1],
+            [-1, 0, 1]
+        ],
+        "islands":[]
+    },
     environment: "forest",
     room: "118218",
     xr: false
