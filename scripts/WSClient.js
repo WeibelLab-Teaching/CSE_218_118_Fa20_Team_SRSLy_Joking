@@ -70,12 +70,8 @@ function EstablishWebsocketConnection(callback) {
                         console.log("[Websocket] created avatar streamer", streamer);
                     }
                     else {
-<<<<<<< HEAD
                         let positionOfStreamer = getStreamerPosition(streamer);
                         streamer = new VideoStreamer(scene, p, pcpair, positionOfStreamer);
-=======
-                        streamer = new VideoStreamer(scene, p, pcpair, rtc_socket_id_streamerPosition);
->>>>>>> 9245ea864b1808843d6fc31c32f687cfbf3fb448
                         console.log("[Websocket] created video streamer", streamer);
                     }
                 }
