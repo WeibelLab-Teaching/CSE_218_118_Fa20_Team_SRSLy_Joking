@@ -129,6 +129,11 @@ class PlaySpace {
     enterPlaySpaceConfigurator() {
         // Remove Environment
         Environment.level();
+        this.splines = [];
+        for (let vis of this.splineVisuals) {
+            vis.dispose();
+        }
+        this.splineVisuals = [];
 
         this.showPlaySpace();
         this.showControlPanel();
@@ -298,6 +303,30 @@ class PlaySpace {
 
         Environment.setEnvironmentFromAppState(ApplicationState);
         console.log("Saving");
+    }
+
+    createVisualBoundary(meshes) {
+        let ret = [];
+
+        let spline = BABYLON.Curve3.CreateCatmullRomSpline(this.area.border, 3, true);
+
+        let points = spline.getPoints();
+        for (let i = 0; i < points.length; i++) {
+            console.log("Placing rock at", points[i]);
+            for (let j = 0; j < meshes.length; j++) {
+                let instance = meshes[j].createInstance(`playareabound${i}_part${j}`);
+                console.log("Scaling at", instance.scaling);
+                let mult = 1 / instance.scaling.x;
+                let trans = points[i].multiplyByFloats(mult, mult, mult);
+                instance.locallyTranslate(trans);
+                let scale = 3;
+                instance.scaling = new BABYLON.Vector3(instance.scaling.x*scale, instance.scaling.y*scale, instance.scaling.z*scale);
+                instance.rotation = new BABYLON.Vector3(0, math.random(-math.pi, math.pi), 0);
+                ret.push(instance);
+                // console.log("instantiated", instance);
+            }
+        }
+        return ret;
     }
 
 

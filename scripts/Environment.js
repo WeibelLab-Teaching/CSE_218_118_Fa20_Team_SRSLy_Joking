@@ -17,6 +17,12 @@ class Environment {
         "rock": ["/assets/", "rock.glb"],
         "tree": ["/assets/", "Tree2.glb"]
     }
+    static playAreaAssets = {
+        // "bush": "/assets/Bush_Mediteranean/bush.glb",
+        "rock": ["/assets/", "rock.glb"],
+    }
+
+
     static parentMesh = undefined;
     static disposables = [];
 
@@ -48,6 +54,7 @@ class Environment {
 
     static setupEnvironment(ground, asset, allow_rotate=false, allow_scale=false, makeMountains=false, numberToSpawn=15) {
         console.log("Setting Environment to", ground, asset);
+        this.level();
 
         BABYLON.SceneLoader.ImportMesh(null, Environment.assets[asset][0], Environment.assets[asset][1], scene, function (meshes) {
             console.log(meshes);
@@ -59,11 +66,9 @@ class Environment {
                 root = undefined;
             }
             let pos = new BABYLON.Vector3(Math.random() * 4 * numberToSpawn - 2 * numberToSpawn, 0, Math.random() * 4 * numberToSpawn - 2 * numberToSpawn);
-            Environment.parentMesh = meshes;
+            Environment.parentMesh = meshes.filter(mesh => {return mesh.name !== "__root__"});;
 
             if (root.length!==0) {
-
-                // Environment.parentMesh = [root]; //meshes.filter(mesh => {return mesh.name !== "__root__"});
                 root.locallyTranslate(pos);
                 Environment.disposables.push(root);
             }
@@ -84,20 +89,52 @@ class Environment {
             groundMaterial.bumpTexture = new BABYLON.Texture(Environment.grounds[ground].normal, scene);
         }
         groundMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+
         let groundPlane = scene.getMeshByID("ground")
+
         if (makeMountains) {
             let mountains = Environment.formMountains();
             mountains.material = groundMaterial;
             groundMaterial.diffuseTexture.uScale = 5.0;
             groundMaterial.diffuseTexture.vScale = 5.0;
+            Environment.disposables.push(mountains);
+
             // hide ground plane
             groundPlane.material = new BABYLON.StandardMaterial("invisible ground mat", scene);
             groundPlane.material.alpha = 0;
         }
         else {
-            groundPlane.material = groundMaterial;
-            groundPlane.material.alpha = 1;
+            // groundPlane.material = groundMaterial;
+            // groundPlane.material.alpha = 1;
+
+            let giantPlane = new BABYLON.MeshBuilder.CreatePlane("giant plane", {size:200}, scene);
+            giantPlane.rotation = new BABYLON.Vector3(math.pi/2, 0, 0);
+            giantPlane.material = groundMaterial;
+            groundMaterial.diffuseTexture.uScale = 5.0;
+            groundMaterial.diffuseTexture.vScale = 5.0;
+            Environment.disposables.push(giantPlane);
+
+            // hide ground plane
+            groundPlane.material = new BABYLON.StandardMaterial("invisible ground mat", scene);
+            groundPlane.material.alpha = 0;
         }
+
+
+        // Set play area visual
+        Environment.setupPlayArea("rock");
+    }
+
+    static setupPlayArea(asset) {
+        BABYLON.SceneLoader.ImportMesh(null, Environment.playAreaAssets[asset][0], Environment.playAreaAssets[asset][1], scene, function (meshes) {
+            let placedMeshes = playSpace.createVisualBoundary(meshes.filter(mesh => {return mesh.name !== "__root__"}));
+            for (let m of placedMeshes) {
+                Environment.disposables.push(m);
+            }
+
+            for (let m of meshes) {
+                Environment.disposables.push(m);
+            }
+        });
     }
 
     static spawn(numberToSpawn, allow_rotate=false, allow_scale=false) {
@@ -135,12 +172,17 @@ class Environment {
         Environment.dispose();
 
         // TODO: Level
-        scene.getMeshByName("Mountains").dispose();
+        // mnts = scene.getMeshByName("Mountains")
+        // if (mnts) {
+        //     mnts.dispose();
+        // }
 
         // Set Ground texture
         let groundMaterial = new BABYLON.StandardMaterial("groundMat", scene);
-        groundMaterial.diffuseTexture = new BABYLON.Texture(Environment.grounds.wood, scene);
-        scene.getMeshesByID("ground")[0].material = groundMaterial;
+        groundMaterial.diffuseTexture = new BABYLON.Texture(Environment.grounds.wood.color, scene);
+        groundMaterial.bumpTexture = new BABYLON.Texture(Environment.grounds.wood.normal, scene);
+        groundMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+        scene.getMeshByID("ground").material = groundMaterial;
     }
 
     static formMountains() {
@@ -214,7 +256,7 @@ class Environment {
         Environment.guiPanel.addControl(beachButton);
         beachButton.onPointerUpObservable.add(function() {
             console.log("Setting to beach");
-            Environment.setupEnvironment("beach", "rock", true, true);
+            Environment.setupEnvironment("beach", "rock", true, true, false);
             Environment.RemoveButtons();
         });
         Environment.buttons.push(beachButton);
@@ -224,7 +266,7 @@ class Environment {
         Environment.guiPanel.addControl(forestButton);
         forestButton.onPointerUpObservable.add(function() {
             console.log("Setting to forest");
-            Environment.setupEnvironment("forest", "tree", false, false);
+            Environment.setupEnvironment("forest", "tree", false, false, true);
             Environment.RemoveButtons();
         });
         Environment.buttons.push(forestButton);
