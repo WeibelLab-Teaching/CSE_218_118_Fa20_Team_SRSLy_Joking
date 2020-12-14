@@ -20,6 +20,8 @@ class Environment {
         for (let disposable of Environment.disposables) {
             disposable.dispose();
         }
+
+        this.parentMesh = null;
     }
 
     static setEnvironmentFromAppState(ApplicationState) {
@@ -37,58 +39,60 @@ class Environment {
 
     static setupEnvironment(ground, asset, allow_rotate=false, allow_scale=false, numberToSpawn=15) {
         console.log("Setting Environment to", ground, asset);
-        function spawn(numberToSpawn) {
-            let pos;
-            let rot;
-            let scale;
 
-            for (let i = 0; i < numberToSpawn; i++) {
-                pos = new BABYLON.Vector3(Math.random() * 4 * numberToSpawn - 2 * numberToSpawn, 0, Math.random() * 4 * numberToSpawn - 2 * numberToSpawn);
-                while (isInPlayArea(pos.asArray())) {
-                    pos = new BABYLON.Vector3(Math.random() * 4 * numberToSpawn - 2 * numberToSpawn, 0, Math.random() * 4 * numberToSpawn - 2 * numberToSpawn);
-                }
-                rot = new BABYLON.Vector3(Math.random() * 4 * numberToSpawn - 2 * numberToSpawn, Math.random(), Math.random() * 4 * numberToSpawn - 2 * numberToSpawn)
-                scale = new BABYLON.Vector3(Math.random()+.2, Math.random()+.2, Math.random()+.2);
+        BABYLON.SceneLoader.ImportMesh(null, Environment.assets[asset][0], Environment.assets[asset][1], scene, function (meshes) {
+            console.log(meshes);
 
-                for (let j = 0; j < Environment.parentMesh.length; j++) {
-                    let instance = Environment.parentMesh[j].createInstance(`EnvironmentAsset${i}_part${j}`);
-                    if (allow_scale) {
-                        instance.scaling = scale;
-                    }
-                    instance.locallyTranslate(pos);
-                    if (allow_rotate) {
-                        instance.rotation = rot;
-                    }
-                    Environment.disposables.push(instance);
-                }
+            Environment.parentMesh = meshes.filter(mesh => {return mesh.name !== "__root__"});
+            let pos = new BABYLON.Vector3(Math.random() * 4 * numberToSpawn - 2 * numberToSpawn, 0, Math.random() * 4 * numberToSpawn - 2 * numberToSpawn);
+            for (let mesh of meshes) {
+                mesh.locallyTranslate(pos);
+                Environment.disposables.push(mesh);
             }
-        }
+            console.log("Positioned environment asset at", pos);
+            Environment.spawn(numberToSpawn - 1, allow_rotate, allow_scale) // -1 because we just made one by importing the mesh
+        });
 
+        // Set Ground texture
+        let groundMaterial = new BABYLON.StandardMaterial("groundMat", scene);
+        groundMaterial.diffuseTexture = new BABYLON.Texture(Environment.grounds[ground], scene);
+        scene.getMeshesByID("ground")[0].material = groundMaterial;
+    }
 
+    static spawn(numberToSpawn, allow_rotate=false, allow_scale=false) {
         if (!Environment.parentMesh) {
-            BABYLON.SceneLoader.ImportMesh(null, Environment.assets[asset][0], Environment.assets[asset][1], scene, function (meshes) {
-                console.log(meshes);
+            throw new Error("Need a parent mesh before spawning");
+            return;
+        }
+        let pos;
+        let rot;
+        let scale;
 
-                Environment.parentMesh = meshes.filter(mesh => {return mesh.name !== "__root__"});
-                let pos = new BABYLON.Vector3(Math.random() * 4 * numberToSpawn - 2 * numberToSpawn, 0, Math.random() * 4 * numberToSpawn - 2 * numberToSpawn);
-                for (let mesh of meshes) {
-                    mesh.locallyTranslate(pos);
-                    Environment.disposables.push(mesh);
+        for (let i = 0; i < numberToSpawn; i++) {
+            pos = new BABYLON.Vector3(Math.random() * 4 * numberToSpawn - 2 * numberToSpawn, 0, Math.random() * 4 * numberToSpawn - 2 * numberToSpawn);
+            while (playSpace.isInPlayArea(pos.asArray())) {
+                pos = new BABYLON.Vector3(Math.random() * 4 * numberToSpawn - 2 * numberToSpawn, 0, Math.random() * 4 * numberToSpawn - 2 * numberToSpawn);
+            }
+            rot = new BABYLON.Vector3(Math.random() * 4 * numberToSpawn - 2 * numberToSpawn, Math.random(), Math.random() * 4 * numberToSpawn - 2 * numberToSpawn)
+            scale = new BABYLON.Vector3(Math.random()+.2, Math.random()+.2, Math.random()+.2);
+
+            for (let j = 0; j < Environment.parentMesh.length; j++) {
+                let instance = Environment.parentMesh[j].createInstance(`EnvironmentAsset${i}_part${j}`);
+                if (allow_scale) {
+                    instance.scaling = scale;
                 }
-                console.log("Positioned environment asset at", pos);
-                spawn(numberToSpawn - 1) // -1 because we just made one by importing the mesh
-            });
-
-            // Set Ground texture
-            let groundMaterial = new BABYLON.StandardMaterial("groundMat", scene);
-            groundMaterial.diffuseTexture = new BABYLON.Texture(Environment.grounds[ground], scene);
-            scene.getMeshesByID("ground")[0].material = groundMaterial;
-        } else {
-            spawn(numberToSpawn);
+                instance.locallyTranslate(pos);
+                if (allow_rotate) {
+                    instance.rotation = rot;
+                }
+                Environment.disposables.push(instance);
+            }
         }
     }
 
     static level() {
+        Environment.dispose();
+
         // TODO: Level
 
         // Set Ground texture
@@ -124,7 +128,7 @@ class Environment {
         let beachButton = new BABYLON.GUI.HolographicButton("Beach Button");
         Environment.guiPanel.addControl(beachButton);
         beachButton.onPointerUpObservable.add(function() {
-            console.log("Setting to beach", Environment);
+            console.log("Setting to beach");
             Environment.setupEnvironment("beach", "rock", true, true);
             Environment.RemoveButtons();
         });
@@ -134,7 +138,7 @@ class Environment {
         let forestButton = new BABYLON.GUI.HolographicButton("Forest Button");
         Environment.guiPanel.addControl(forestButton);
         forestButton.onPointerUpObservable.add(function() {
-            console.log("Setting to forest", Environment);
+            console.log("Setting to forest");
             Environment.setupEnvironment("forest", "tree", false, false);
             Environment.RemoveButtons();
         });

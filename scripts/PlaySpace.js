@@ -65,7 +65,7 @@ class PlaySpace {
             this.__groundPlaneIntersectionPoint = event.pickInfo.pickedPoint
         }
 
-        // TODO: Show point on ground
+        // Update cursor location
         if (this.cursor) {
             this.cursor.position = event.pickInfo.pickedPoint;
         }
@@ -128,7 +128,6 @@ class PlaySpace {
      */
     enterPlaySpaceConfigurator() {
         // Remove Environment
-        Environment.dispose();
         Environment.level();
 
         this.showPlaySpace();
@@ -299,5 +298,50 @@ class PlaySpace {
 
         Environment.setEnvironmentFromAppState(ApplicationState);
         console.log("Saving");
+    }
+
+
+    /**
+     * checks if a point is in the play area
+     * Algorithm copied from https://github.com/substack/point-in-polygon/blob/master/index.js
+     * @param {array} point the point to check as an array [x, y, z] eg: [1, 2, 3]
+     */
+    isInPlayArea(point) { // FIXME: this algorithm sucks
+
+        let x = point[0];
+        let y = point[2];
+
+
+        let inside = false;
+        for (let i=0, j=this.area.border.length-1;
+            i < this.area.border.length;
+            j = i++) {
+            
+            let xi = this.area.border[i][0];
+            let yi = this.area.border[i][2];
+
+            let xj = this.area.border[j][0];
+            let yj = this.area.border[j][2];
+
+            let intersect = ((yi > y) != (yj > y))
+                && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+            if (intersect) inside = !inside;
+        }
+
+
+
+        // for (let i = 0, j = this.area.border.length - 1; i < this.area.border.length; j = i++) {
+        //     let xi = this.area.border[i][0];
+        //     let zi = this.area.border[i][2];
+
+        //     let xj = this.area.border[j][0];
+        //     let zj = this.area.border[j][2];
+
+        //     let intersect = ((zi > point[2]) != (zj > point[2])) &&
+        //         (point[0] < (xj - xi) * (point[2] - zi) / (zj - zi) + xi);
+        //     if (intersect) inside = !inside;
+        // }
+
+        return inside;
     }
 }

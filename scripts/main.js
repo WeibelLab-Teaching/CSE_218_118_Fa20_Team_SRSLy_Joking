@@ -294,29 +294,6 @@ function onFollowClicked() {
 	}
 }
 
-
-/**
- * checks if a point is in the play area
- * Algorithm copied from https://github.com/substack/point-in-polygon/blob/master/index.js
- * @param {array} point the point to check as an array [x, y, z] eg: [1, 2, 3]
- */
-function isInPlayArea(point) {
-	let inside = false;
-	for (let i = 0, j = ApplicationState.play_area.length - 1; i < ApplicationState.play_area.length; j = i++) {
-		let xi = ApplicationState.play_area[i][0];
-		let zi = ApplicationState.play_area[i][2];
-
-		let xj = ApplicationState.play_area[j][0];
-		let zj = ApplicationState.play_area[j][2];
-
-		let intersect = ((zi > point[2]) != (zj > point[2])) &&
-			(point[0] < (xj - xi) * (point[2] - zi) / (zj - zi) + xi);
-		if (intersect) inside = !inside;
-	}
-
-	return inside;
-}
-
 /* Should join a meeting */
 function onMeetingJoin(roomid=123) {
 	//TODO do something with roomid, for now it's just room #1.
