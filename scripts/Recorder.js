@@ -21,16 +21,16 @@ class Recorder {
         if (MediaRecorder.isTypeSupported("audio/webm;codecs=pcm")) {
             this.mimeType = "audio/webm;codecs=pcm"
         // Firefox
-        } else if (MediaRecorder.isTypeSupported("audio/vorbis")) {
-            this.mimeType = "audio/vorbis"
+        } else if (MediaRecorder.isTypeSupported("audio/ogg;codecs=opus")) {
+            this.mimeType = "audio/ogg;codecs=opus"
 
         // else just try wav
         } else if (MediaRecorder.isTypeSupported("audio/wav")) {
             this.mimeType = "audio/wav"
         
         // else just try ogg opus
-        } else if (MediaRecorder.isTypeSupported("audio/ogg;codecs=opus")) {
-            this.mimeType = "audio/ogg;codecs=opus"
+        } else if (MediaRecorder.isTypeSupported("audio/vorbis")) {
+            this.mimeType = "audio/vorbis"
 
         // all else fails, just use webm
         } else {
