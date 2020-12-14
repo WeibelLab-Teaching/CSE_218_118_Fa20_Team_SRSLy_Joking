@@ -10,6 +10,8 @@ var userLHand;
 var userRHand;
 var webRTCStreamer = undefined;
 
+var playSpace;
+
 
 var recordButton;
 
@@ -110,14 +112,32 @@ async function createScene(callback) {
 		height: 40,
 		subdivisions: 4
 	}, scene);
+
+	playSpace = new PlaySpace(scene, ground);
+
 	// BABYLON.VRExperienceHelper.addFloorMesh(ground)
 	xrHelper.enableTeleportation({
 		floorMeshName: "ground"
 	});
 
-	// Set Sun
+	// Set Sun and Sky
 	let light = new BABYLON.HemisphericLight("sun", new BABYLON.Vector3(0, 1, 0), scene);
+	let skybox = BABYLON.Mesh.CreateBox("skybox", 1000, scene);
+	let skymat = new BABYLON.SkyMaterial("skyboxMaterial", scene);
+	skymat.backFaceCulling = false;
+	skymat.turbidity = 12;
+	skymat.luminance = .5;
+	skymat.inclination = 0.2;
+	skymat.azimuth = 0.29;
+	skymat.rayleigh = 2;
+	skymat.mieCoefficient = 0.005;
+	skymat.mieDirectionalG = 0.9;
 
+	// skymat.cameraOffset.y = scene.activeCamera.globalPosition.y;
+
+	skybox.material = skymat
+	
+	// new BABYLON.CubeTexture("assets/skybox1/TropicalSunnyDay", scene);
 
 	// Set UI Control panel
 	var guiManager = new BABYLON.GUI.GUI3DManager(scene);
@@ -139,10 +159,10 @@ async function createScene(callback) {
 	let toggleEnvironmentButton = new BABYLON.GUI.HolographicButton("Environment Button");
 	guiPanel.addControl(toggleEnvironmentButton);
 	toggleEnvironmentButton.onPointerUpObservable.add(Environment.onEnvironmentClicked);
-	// play button
-	let playButton = new BABYLON.GUI.HolographicButton("Play Button");
-	guiPanel.addControl(playButton);
-	playButton.onPointerUpObservable.add(() => {for (let streamer of ApplicationState.streamers) {streamer.play()}});
+	// play area button
+	let playareaButton = new BABYLON.GUI.HolographicButton("Play Area Button");
+	guiPanel.addControl(playareaButton);
+	playareaButton.onPointerUpObservable.add(playSpace.enterPlaySpaceConfigurator.bind(playSpace));
 	// connect to meeting button
 	let joinButton = new BABYLON.GUI.HolographicButton("Join Button");
 	guiPanel.addControl(joinButton);
@@ -166,12 +186,12 @@ async function createScene(callback) {
 	envText.color = "white";
 	envText.fontSize = 30;
 	toggleEnvironmentButton.content = envText;
-	// play
-	let playText = new BABYLON.GUI.TextBlock();
-	playText.text = "Play Debug";
-	playText.color = "white";
-	playText.fontSize = 30;
-	playButton.content = playText;
+	// play area
+	let playareaText = new BABYLON.GUI.TextBlock();
+	playareaText.text = "Set Play Space";
+	playareaText.color = "white";
+	playareaText.fontSize = 30;
+	playareaButton.content = playareaText;
 	// connect to meeting button
 	let connectText = new BABYLON.GUI.TextBlock();
 	connectText.text = "Join Meeting";
@@ -227,6 +247,8 @@ window.onload = function () {
 			sendPose();
 			// Connect to WebRTC
 			joinRoom(ApplicationState.id, ApplicationState.room);
+			// Load playspace
+			playSpace.loadFromAppState();
 		});
 	});
 }
@@ -284,29 +306,6 @@ function onFollowClicked() {
 	}
 }
 
-
-/**
- * checks if a point is in the play area
- * Algorithm copied from https://github.com/substack/point-in-polygon/blob/master/index.js
- * @param {array} point the point to check as an array [x, y, z] eg: [1, 2, 3]
- */
-function isInPlayArea(point) {
-	let inside = false;
-	for (let i = 0, j = ApplicationState.play_area.length - 1; i < ApplicationState.play_area.length; j = i++) {
-		let xi = ApplicationState.play_area[i][0];
-		let zi = ApplicationState.play_area[i][2];
-
-		let xj = ApplicationState.play_area[j][0];
-		let zj = ApplicationState.play_area[j][2];
-
-		let intersect = ((zi > point[2]) != (zj > point[2])) &&
-			(point[0] < (xj - xi) * (point[2] - zi) / (zj - zi) + xi);
-		if (intersect) inside = !inside;
-	}
-
-	return inside;
-}
-
 /* Should join a meeting */
 function onMeetingJoin(roomid=123) {
 	//TODO do something with roomid, for now it's just room #1.
@@ -346,15 +345,5 @@ function SetApplicationState(state) {
 	}
 
 	// Load Environment
-	console.log("Setting environment to", ApplicationState.environment);
-	switch(ApplicationState.environment) {
-		case "forest":
-			Environment.setupEnvironment("forest", "tree", false, false);
-			break;
-		case "beach":
-			Environment.setupEnvironment("beach", "rock", true, true);
-			break;
-		default:
-			break;
-	}
+	Environment.setEnvironmentFromAppState(ApplicationState);
 }

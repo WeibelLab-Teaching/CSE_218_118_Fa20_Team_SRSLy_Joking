@@ -7,7 +7,7 @@ class Follower {
         this.target = target;
         this.scene = scene;
         this.isFollowing = false;
-        this.isBillboarding = false;
+        this.isBillboarding = 0;
         this.initialOffset = null;
         this.referenceNode = null;
     }
@@ -39,25 +39,56 @@ class Follower {
         this.mesh.position.z = pos[2];
     }
 
-    billboard(enable=true) {
-        if (enable && !this.isBillboarding) {
-            this.scene.onBeforeRenderObservable.add(this._billboard_logic.bind(this));
-            this.isBillboarding = true;
+    billboard(enable=true, strategy=1) {
+        // Remove old billboarding logic=
+        switch (this.isBillboarding) {
+            case 0:
+                break;
+            case 1:
+                this.scene.onBeforeRenderObservable.remove(this._billboard_logic.bind(this));
+                break;
+            case 2:
+                this.scene.onBeforeRenderObservable.remove(this._face_logic.bind(this));
+                break;
+            default:
+                console.error("Unknown billboarding type", this.isBillboarding);
+                enable = false;
+                break;
         }
-        else if (enable && this.isBillboarding) {
-            // Do nothing - already billboarding
-        }
-        else if (!enable && this.isBillboarding) {
-            this.scene.onBeforeRenderObservable.remove(this._billboard_logic.bind(this));
-            this.isBillboarding = false;
+
+
+        if (enable) {
+            switch (strategy) {
+                case 1:
+                    this.scene.onBeforeRenderObservable.add(this._billboard_logic.bind(this));
+                    this.isBillboarding = 1
+                    break;
+                case 2:
+                    this.scene.onBeforeRenderObservable.add(this._face_logic.bind(this));
+                    this.isBillboarding = 2
+                    break;
+                default:
+                    console.error("Unknown billboarding strategy", strategy);
+                    break;
+            }
         }
         else {
-            // Do nothing - billboarding already disabled.
+            this.isBillboarding = 0
         }
     }
 
     _billboard_logic() {
         this.mesh.lookAt(this.scene.activeCamera.position, Math.PI)
+    }
+
+    _face_logic() {
+        let targetPosition = (new Pose(this.target.pose)).position
+
+        let theta = math.atan2(
+            targetPosition[0] - this.mesh.position.x,
+            targetPosition[2] - this.mesh.position.z
+        )
+        this.mesh.rotation.y = theta;
     }
 
     /**
