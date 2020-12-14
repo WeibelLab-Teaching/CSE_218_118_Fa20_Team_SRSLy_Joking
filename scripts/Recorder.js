@@ -27,10 +27,6 @@ class Recorder {
         // else just try wav
         } else if (MediaRecorder.isTypeSupported("audio/wav")) {
             this.mimeType = "audio/wav"
-        
-        // else just try ogg opus
-        } else if (MediaRecorder.isTypeSupported("audio/vorbis")) {
-            this.mimeType = "audio/vorbis"
 
         // all else fails, just use webm
         } else {
@@ -153,60 +149,74 @@ class Recorder {
       
         var clipName = prompt('Enter a name for your sound clip');
 
-        var i;
-        for(i = -1; i < this.chunks.length; i++) {
+        // var i;
+        // for(i = -1; i < this.chunks.length; i++) {
 
-            var clipContainer = document.createElement('article');
-            var clipLabel = document.createElement('p');
-            var audio = document.createElement('audio');
-            var deleteButton = document.createElement('button');
-            var link = document.createElement("a"); 
+            // this is not needed, we will ask them to download the file.
+            // var clipContainer = document.createElement('article');
+            // var clipLabel = document.createElement('p');
+            // var audio = document.createElement('audio');
+            // var deleteButton = document.createElement('button');
+            // var link = document.createElement("a"); 
            
-            clipContainer.classList.add('clip');
-            audio.setAttribute('controls', '');
-            deleteButton.innerHTML = "Delete";
+            // clipContainer.classList.add('clip');
+            // audio.setAttribute('controls', '');
+            // deleteButton.innerHTML = "Delete";
       
-            clipContainer.appendChild(audio);
-            clipContainer.appendChild(clipLabel);
-            clipContainer.appendChild(deleteButton);
-            soundClips.appendChild(clipContainer);
+            // clipContainer.appendChild(audio);
+            // clipContainer.appendChild(clipLabel);
+            // clipContainer.appendChild(deleteButton);
+            // soundClips.appendChild(clipContainer);
       
-            audio.controls = true;
+            // audio.controls = true;
 
 
-            if(i == -1) {
-                var blob = this.getConcatenatedBlob();
-                var audioURL = URL.createObjectURL(blob);
+            // if(i == -1) {
+            var blob = this.getConcatenatedBlob();
+            var audioURL = URL.createObjectURL(blob);
         
-            } else {
-                var blob = new Blob([this.chunks[i]], {'type' : this.mimeType});
-                var audioURL = URL.createObjectURL(blob);
-            }
+            // } else {
+            //     var blob = new Blob([this.chunks[i]], {'type' : this.mimeType});
+            //     var audioURL = URL.createObjectURL(blob);
+            // }
 
-            audio.src = audioURL;
+            // Not needed will ask user to download the audio
+            // audio.src = audioURL;
             console.log("recorder stopped");
       
-            deleteButton.onclick = function(e) {
-              evtTgt = e.target;
-              evtTgt.parentNode.parentNode.removeChild(evtTgt.parentNode);
-            }.bind(this)
+            // deleteButton.onclick = function(e) {
+            //   evtTgt = e.target;
+            //   evtTgt.parentNode.parentNode.removeChild(evtTgt.parentNode);
+            // }.bind(this)
     
             console.log(this.chunks)
     
-            var link = document.createElement("a"); // Or maybe get it from the current document
-            link.href = audioURL;
-            if(i == -1) {
-                clipLabel.innerHTML = clipName + "_full";
-                link.download = clipName + "_full.weba";
-            } else {
-                clipLabel.innerHTML = clipName + "_" + i;
-                link.download = clipName + ".weba";
+            if(confirm("Do you want to download this clip? It will be deleted if not.")) {
+                var link = document.createElement("a"); // Or maybe get it from the current document
+                link.href = audioURL;
+                // if(i == -1) {
+                    // clipLabel.innerHTML = clipName + "_full";
+                    // link.download = clipName + ".weba";
+                // } else {
+                    // clipLabel.innerHTML = clipName + "_" + i;
+                    // link.download = clipName + ".weba";
+                // }
+                if(this.mimeType.includes("ogg")) {
+                    link.download = clipName + ".ogg";
+                } else if (this.mimeType.includes("pcm")) {
+                    link.download = clipName + ".pcm";
+                } else if (this.mimeType.includes("wav")) {
+                    link.download = clipName + ".wav";
+                } else {
+                    link.download = clipName + ".weba";
+                }
+                link.click();
+                // clipContainer.appendChild(link); // Or append it whereever you want
             }
-            link.innerHTML = "Click here to download the file";
-            clipContainer.appendChild(link); // Or append it whereever you want
-        }
+        // }
     } 
     getConcatenatedBlob() {
+
     //     var blobs = []
     //     var j;
     //     for (j = 0; j < this.chunks.length; j++) {

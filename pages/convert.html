@@ -3,18 +3,25 @@
 <html>
 <head>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/EventEmitter/5.2.8/EventEmitter.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
 </head>
 <body>
 
-<form id="uploadbanner" enctype="multipart/form-data" method="post" action="#">
-    <input id="fileupload" name="audio_file" type="file" />
-    <input type="submit" value="submit" id="submit" />
-</form>
-
+<div class="">
+    <form id="uploadbanner" enctype="multipart/form-data" method="post" action="#">
+        <input id="fileupload" class="btn btn-secondary btn-lg" name="audio_file" type="file" />
+        <input type="submit" class="btn btn-dark btn-lg" value="submit" id="submit" />
+    </form>
+</div>
+<div>
+    <p id="status" class="text-uppercase">Download window will appear soon...</p>
+</div>
 
 </body>
 <footer>
-
+    <script src="js/convert.js"></script>
 </footer>
 </html>
  
