@@ -1,8 +1,17 @@
 class Environment {
     static grounds = {
-        "beach": "/assets/BeachGround/Ground033_2K_Color.jpg",
-        "forest": "/assets/ground/Color.jpg",
-        "wood": "/assets/WoodFloor/WoodFloor034_2K_Color.jpg"
+        "beach": {
+            "color": "/assets/BeachGround/Ground033_2K_Color.jpg",
+            "normal": "/assets/BeachGround/Ground033_2K_Normal.jpg"
+        },
+        "forest": {
+            "color": "/assets/ground/Color.jpg",
+            "normal": "/assets/ground/Normal.jpg"
+        },
+        "wood": {
+            "color": "/assets/WoodFloor/WoodFloor034_2K_Color.jpg",
+            "normal": "/assets/WoodFloor/WoodFloor034_2K_Normal.jpg"
+        }
     }
     static assets = {
         "rock": ["/assets/", "rock.glb"],
@@ -27,7 +36,7 @@ class Environment {
     static setEnvironmentFromAppState(ApplicationState) {
         switch(ApplicationState.environment) {
             case "forest":
-                Environment.setupEnvironment("forest", "tree", false, false);
+                Environment.setupEnvironment("forest", "tree", false, false, true);
                 break;
             case "beach":
                 Environment.setupEnvironment("beach", "rock", true, true);
@@ -37,7 +46,7 @@ class Environment {
         }
     }
 
-    static setupEnvironment(ground, asset, allow_rotate=false, allow_scale=false, numberToSpawn=15) {
+    static setupEnvironment(ground, asset, allow_rotate=false, allow_scale=false, makeMountains=false, numberToSpawn=15) {
         console.log("Setting Environment to", ground, asset);
 
         BABYLON.SceneLoader.ImportMesh(null, Environment.assets[asset][0], Environment.assets[asset][1], scene, function (meshes) {
@@ -55,8 +64,25 @@ class Environment {
 
         // Set Ground texture
         let groundMaterial = new BABYLON.StandardMaterial("groundMat", scene);
-        groundMaterial.diffuseTexture = new BABYLON.Texture(Environment.grounds[ground], scene);
-        scene.getMeshesByID("ground")[0].material = groundMaterial;
+        groundMaterial.diffuseTexture = new BABYLON.Texture(Environment.grounds[ground].color, scene);
+        if ("normal" in Environment.grounds[ground]) {
+            groundMaterial.bumpTexture = new BABYLON.Texture(Environment.grounds[ground].normal, scene);
+        }
+        groundMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+        let groundPlane = scene.getMeshByID("ground")
+        if (makeMountains) {
+            let mountains = Environment.formMountains();
+            mountains.material = groundMaterial;
+            groundMaterial.diffuseTexture.uScale = 5.0;
+            groundMaterial.diffuseTexture.vScale = 5.0;
+            // hide ground plane
+            groundPlane.material = new BABYLON.StandardMaterial("invisible ground mat", scene);
+            groundPlane.material.alpha = 0;
+        }
+        else {
+            groundPlane.material = groundMaterial;
+            groundPlane.material.alpha = 1;
+        }
     }
 
     static spawn(numberToSpawn, allow_rotate=false, allow_scale=false) {
@@ -94,11 +120,55 @@ class Environment {
         Environment.dispose();
 
         // TODO: Level
+        scene.getMeshByName("Mountains").dispose();
 
         // Set Ground texture
         let groundMaterial = new BABYLON.StandardMaterial("groundMat", scene);
         groundMaterial.diffuseTexture = new BABYLON.Texture(Environment.grounds.wood, scene);
         scene.getMeshesByID("ground")[0].material = groundMaterial;
+    }
+
+    static formMountains() {
+        let mapSubX = 100;             // point number on X axis
+        let mapSubZ = 100;              // point number on Z axis
+        let seed = 0.3;                 // seed
+        let noiseScale = 0.03;         // noise frequency
+        let elevationScale = 6.0;
+        noise.seed(seed);
+        let mapData = new Float32Array(mapSubX * mapSubZ * 3); // 3 float values per point : x, y and z
+
+
+        let sectionSizeZ = mapSubZ/5;
+        let sectionSizeX = mapSubX/5;
+
+        let paths = [];                             // array for the ribbon model
+        for (let l = 0; l < mapSubZ; l++) {
+            let path = [];                          // only for the ribbon
+            for (let w = 0; w < mapSubX; w++) {
+                let x = (w - mapSubX * 0.5) * 2.0;
+                let z = (l - mapSubZ * 0.5) * 2.0;
+                let y = noise.simplex2(x * noiseScale, z * noiseScale);
+                y *= (0.5 + y) * y * elevationScale;   // let's increase a bit the noise computed altitude
+                    
+                // Flatten out play area;
+                if (l > (mapSubZ/2-sectionSizeZ/2) && l < (mapSubZ/2+sectionSizeZ/2) &&
+                    w > (mapSubX/2-sectionSizeX/2) && w < (mapSubX/2+sectionSizeX/2)) {
+                    y = 0;
+                }
+
+                mapData[3 *(l * mapSubX + w)] = x;
+                mapData[3 * (l * mapSubX + w) + 1] = y;
+                mapData[3 * (l * mapSubX + w) + 2] = z;
+                
+                path.push(new BABYLON.Vector3(x, y, z));
+            }
+            paths.push(path);
+        }
+
+
+        let map = BABYLON.MeshBuilder.CreateRibbon("Mountains", {pathArray: paths, sideOrientation: 2}, scene);
+        // map.position.y = -1.0;
+        return map;
     }
 
     static RemoveButtons() {
