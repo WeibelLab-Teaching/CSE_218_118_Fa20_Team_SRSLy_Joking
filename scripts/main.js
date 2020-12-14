@@ -10,7 +10,7 @@ var userLHand;
 var userRHand;
 var webRTCStreamer = undefined;
 
-var playSpace = new PlaySpace();
+var playSpace;
 
 
 var recordButton;
@@ -109,6 +109,9 @@ async function createScene(callback) {
 		height: 40,
 		subdivisions: 4
 	}, scene);
+
+	playSpace = new PlaySpace(scene, ground);
+
 	// BABYLON.VRExperienceHelper.addFloorMesh(ground)
 	xrHelper.enableTeleportation({
 		floorMeshName: "ground"
@@ -353,15 +356,5 @@ function SetApplicationState(state) {
 	}
 
 	// Load Environment
-	console.log("Setting environment to", ApplicationState.environment);
-	switch(ApplicationState.environment) {
-		case "forest":
-			Environment.setupEnvironment("forest", "tree", false, false);
-			break;
-		case "beach":
-			Environment.setupEnvironment("beach", "rock", true, true);
-			break;
-		default:
-			break;
-	}
+	Environment.setEnvironmentFromAppState(ApplicationState);
 }

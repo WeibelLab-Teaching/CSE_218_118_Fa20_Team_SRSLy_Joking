@@ -1,7 +1,8 @@
 class Environment {
     static grounds = {
         "beach": "/assets/BeachGround/Ground033_2K_Color.jpg",
-        "forest": "/assets/ground/Color.jpg"
+        "forest": "/assets/ground/Color.jpg",
+        "wood": "/assets/WoodFloor/WoodFloor034_2K_Color.jpg"
     }
     static assets = {
         "rock": ["/assets/", "rock.glb"],
@@ -18,6 +19,19 @@ class Environment {
     static dispose() {
         for (let disposable of Environment.disposables) {
             disposable.dispose();
+        }
+    }
+
+    static setEnvironmentFromAppState(ApplicationState) {
+        switch(ApplicationState.environment) {
+            case "forest":
+                Environment.setupEnvironment("forest", "tree", false, false);
+                break;
+            case "beach":
+                Environment.setupEnvironment("beach", "rock", true, true);
+                break;
+            default:
+                break;
         }
     }
 
@@ -72,6 +86,15 @@ class Environment {
         } else {
             spawn(numberToSpawn);
         }
+    }
+
+    static level() {
+        // TODO: Level
+
+        // Set Ground texture
+        let groundMaterial = new BABYLON.StandardMaterial("groundMat", scene);
+        groundMaterial.diffuseTexture = new BABYLON.Texture(Environment.grounds.wood, scene);
+        scene.getMeshesByID("ground")[0].material = groundMaterial;
     }
 
     static RemoveButtons() {

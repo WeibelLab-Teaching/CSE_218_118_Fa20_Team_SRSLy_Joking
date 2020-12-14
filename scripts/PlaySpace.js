@@ -7,6 +7,26 @@
 
 class PlaySpace {
     // ==========	Instance Variables	==========
+    __area;
+    scene;
+    ground;
+
+    splines;
+    splineVisuals;
+
+    // Cursor
+    cursor;
+    clickAction;
+    selecting;
+    cursorUpdateObservable;
+    
+
+    // Controls
+    doneButton;
+    islandButton;
+    boundaryButton;
+    guiPanel;
+    guiManager;
 
     get area() {
         return this.__area;
@@ -23,20 +43,44 @@ class PlaySpace {
         pushAppState();
     }
 
-    constructor() {
+    constructor(scene, ground) {
+        this.scene = scene;
+        this.ground = ground;
+
+	    if (!this.ground.actionManager) {
+            this.ground.actionManager = new BABYLON.ActionManager(this.scene);
+        } 
+
         this.__area = {
             "border": [],
             "islands": []
         };
-        this.controlButtons = [];
 
         this.splines = [];
         this.splineVisuals = [];
     }
 
-    addPoint(point) {
-        
-        this.area.push(point);
+    cursorUpdate(event) {
+        if (event.pickInfo.pickedMesh.id === this.ground.id) {
+            this.__groundPlaneIntersectionPoint = event.pickInfo.pickedPoint
+        }
+
+        // TODO: Show point on ground
+        if (this.cursor) {
+            this.cursor.position = event.pickInfo.pickedPoint;
+        }
+    }
+
+    addPoint() {
+        this.area.border.push(this.__groundPlaneIntersectionPoint)
+        console.log("Added point", this.__groundPlaneIntersectionPoint);
+       
+        if (this.area.border.length > 2) {
+            this.showPlaySpace(false);
+        }
+        else {
+            this.showPlaySpace(true);
+        }
     }
 
     reset() {
@@ -44,6 +88,11 @@ class PlaySpace {
             "border": [],
             "islands": []
         };
+        this.splines = [];
+        for (let vis of this.splineVisuals) {
+            vis.dispose();
+        }
+        this.splineVisuals = [];
     }
 
     loadFromAppState() {
@@ -63,17 +112,13 @@ class PlaySpace {
      * Also pushes the info to the server
      */
     updateAppState() {
-        let a = {
-            "border": [],
-            "islands": []
-        }
-
-        a.border.push(this.area.border.map(p=>[p.x, p.y, p.z]))
+        let isles = []
         for (let island of this.area.islands) {
-            a.islands.push(island.map(p=>[p.x, p.y, p.z]))
+            isles.push(island.map(p=>[p.x, p.y, p.z]))
         }
 
-        ApplicationState.play_area = a;
+        ApplicationState.play_area.border = this.area.border.map(p=>[p.x, p.y, p.z])
+        ApplicationState.play_area.islands.push(isles);
         pushAppState();
     }
 
@@ -82,6 +127,10 @@ class PlaySpace {
      * and show play area boundaries
      */
     enterPlaySpaceConfigurator() {
+        // Remove Environment
+        Environment.dispose();
+        Environment.level();
+
         this.showPlaySpace();
         this.showControlPanel();
     }
@@ -90,33 +139,25 @@ class PlaySpace {
      * Shows a visual of the play area.
      * Draws lines on the ground indicating the play area
      */
-    showPlaySpace() {
+    showPlaySpace(closed=true) {
+        // Clear old visuals
+        for (let vis of this.splineVisuals) {
+            vis.dispose();
+        }
 
-        let material = new BABYLON.StandardMaterial("boundary material", scene);
-        material.reflectionTexture = new BABYLON.CubeTexture("assets/skybox1/TropicalSunnyDay", scene);
-        material.diffuseColor = new BABYLON.Color3(0, 0, 0);
-        material.emissiveColor = new BABYLON.Color3(0.5, 0.5, 0.5);
-        material.alpha = 0.2;
-        material.specularPower = 16;
-        material.reflectionFresnelParameters = new BABYLON.FresnelParameters();
-        material.reflectionFresnelParameters.bias = 0.1;
-        material.emissiveFresnelParameters = new BABYLON.FresnelParameters();
-        material.emissiveFresnelParameters.bias = 0.6;
-        material.emissiveFresnelParameters.power = 4;
-        material.emissiveFresnelParameters.leftColor = BABYLON.Color3.White();
-        material.emissiveFresnelParameters.rightColor = BABYLON.Color3.Black();
-        material.opacityFresnelParameters = new BABYLON.FresnelParameters();
-        material.opacityFresnelParameters.leftColor = BABYLON.Color3.White();
-        material.opacityFresnelParameters.rightColor = BABYLON.Color3.Black();
+        // Create gradient material
+        let material = new BABYLON.GradientMaterial("boundary material", scene);
+        material.bottomColor = new BABYLON.Color3(0, .5, 1);
+        material.topColor = new BABYLON.Color3(0, .5, 1);
+        material.topColorAlpha = -2;
+        material.bottomColorAlpha = 0.8;
 
-
+        // Create path
         let shape = [
-            new BABYLON.Vector3(0.1, .25, 0),
-            new BABYLON.Vector3(0, .5, 0),
-            new BABYLON.Vector3(-0.1, 0.25, 0),
-            new BABYLON.Vector3(0.1, 0.25, 0)
+            new BABYLON.Vector3(0, 0.5, 0),
+            new BABYLON.Vector3(0, 0.05, 0)
         ]
-        let spline = BABYLON.Curve3.CreateCatmullRomSpline(this.area.border, 10, true);
+        let spline = BABYLON.Curve3.CreateCatmullRomSpline(this.area.border, 10, closed);
         let visual = BABYLON.MeshBuilder.ExtrudeShape("border visual", {
             shape: shape,
             path: spline.getPoints(),
@@ -124,7 +165,7 @@ class PlaySpace {
         }, scene);
         visual.material = material;
     
-
+        // Add to instance variables
         this.splines.push(spline);
         this.splineVisuals.push(visual);
     }
@@ -133,13 +174,11 @@ class PlaySpace {
      * Removes the playspace control panel
      */
     destroyControlPanel() {
-        for (let button of self.controlButtons) {
-            button.content.dispose();
-            button.dispose();
-        }
-        this.controlButtons = [];
-        this.guiPanel.dispose();
-        this.guiManager.dispose();
+        if (this.doneButton) {this.doneButton.dispose();}
+        if (this.boundaryButton) {this.boundaryButton.dispose();}
+        if (this.islandButton) {this.islandButton.dispose();}
+        if (this.guiPanel) {this.guiPanel.dispose();}
+        if (this.guiManager) {this.guiManager.dispose();}
     }
 
     /**
@@ -165,38 +204,35 @@ class PlaySpace {
         // Draw Walls
         let boundaryButton = new BABYLON.GUI.HolographicButton("Draw Boundary");
         this.guiPanel.addControl(boundaryButton);
-        boundaryButton.onPointerUpObservable.add(this.drawBoundary);
-        this.controlButtons.push(boundaryButton);
+        boundaryButton.onPointerUpObservable.add(this.drawBoundary.bind(this));
         let boundaryText = new BABYLON.GUI.TextBlock();
         boundaryText.text = "Draw Boundary";
         boundaryText.color = "white";
         boundaryText.fontSize = 30;
         boundaryButton.content = boundaryText;
+        this.boundaryButton = boundaryButton;
 
         // Draw Islands
         let islandButton = new BABYLON.GUI.HolographicButton("Draw Islands");
         this.guiPanel.addControl(islandButton);
-        islandButton.onPointerUpObservable.add(this.drawIslands);
-        this.controlButtons.push(islandButton);
+        islandButton.onPointerUpObservable.add(this.drawIslands.bind(this));
         let islandText = new BABYLON.GUI.TextBlock();
         islandText.text = "Draw Islands";
         islandText.color = "white";
         islandText.fontSize = 30;
         islandButton.content = islandText;
+        this.islandButton = islandButton;
 
         // Done
         let doneButton = new BABYLON.GUI.HolographicButton("Done Button");
         this.guiPanel.addControl(doneButton);
-        doneButton.onPointerUpObservable.add(this.saveAndExit);
-        this.controlButtons.push(doneButton);
+        doneButton.onPointerUpObservable.add(this.saveAndExit.bind(this));
         let doneText = new BABYLON.GUI.TextBlock();
         doneText.text = "Done";
         doneText.color = "white";
         doneText.fontSize = 30;
         doneButton.content = doneText;
-
-
-
+        this.doneButton = doneButton;
     }
 
     /**
@@ -204,7 +240,41 @@ class PlaySpace {
      * These are the corners of the walls in your environment
      */
     drawBoundary() {
-        console.log("Drawing Bounds");
+        if (!this.selecting) {
+            this.selecting = true;
+            console.log("Drawing Bounds");
+            this.reset(); // clear old data
+
+            this.clickAction = new BABYLON.ExecuteCodeAction(
+                BABYLON.ActionManager.OnPickTrigger, 
+                this.addPoint.bind(this)
+            )
+
+            this.ground.actionManager.registerAction(this.clickAction);
+            this.cursor = BABYLON.Mesh.CreateTorus("PlaySpace Cursor", 0.75, 0.1, 20, this.scene);
+            this.cursorUpdateObservable = 
+                this.scene.onPointerObservable.add(this.cursorUpdate.bind(this));
+
+            // Update control panel buttons
+            this.boundaryButton.content.text = "Finish";
+            this.islandButton.isVisible = false;
+            this.doneButton.isVisible = false;
+        }
+        else {
+            this.selecting = false;
+            console.log("Ending Draw", this.area);
+            this.showPlaySpace(true);
+            if (this.clickAction) {
+                this.ground.actionManager.unregisterAction(this.clickAction);
+            }
+            if (this.cursor) {this.cursor.dispose()}
+            this.scene.onPointerObservable.remove(this.cursorUpdateObservable);
+
+            // Update control panel buttons
+            this.boundaryButton.content.text = "Draw Boundary";
+            this.islandButton.isVisible = true;
+            this.doneButton.isVisible = true;
+        }
     }
 
     /**
@@ -220,6 +290,14 @@ class PlaySpace {
      * Saves the playspace and removes control panel and visuals.
      */
     saveAndExit() {
+        this.updateAppState();
+        this.destroyControlPanel();
+        this.splines = [];
+        for (let vis of this.splineVisuals) {
+            vis.dispose();
+        }
+
+        Environment.setEnvironmentFromAppState(ApplicationState);
         console.log("Saving");
     }
 }
