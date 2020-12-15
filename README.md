@@ -65,6 +65,7 @@ Users can record audio snippets using a button in their control panel.
 
 ### Desktop Client
 Non-XR users can join meetings using the desktop client. These users can also share their screen that can be viewed by both XR and Non-XR participants.
+
 <img src="https://user-images.githubusercontent.com/23105064/102206107-f578c200-3e80-11eb-93b9-a68fec39ae68.png" width="900"/>
 
 
@@ -126,4 +127,4 @@ The Walk and Talk team is responsible for maintaining this project. Should you n
 You can find general support for the technologies we use here:
 - [Babylon.js](https://doc.babylonjs.com/) 
 - [Node.js](https://nodejs.org/en/)
-- [WebRTC](https://webrtc.org/).
+- [WebRTC](https://webrtc.org/)
