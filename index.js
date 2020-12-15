@@ -16,8 +16,15 @@ var cookieParser = require('cookie-parser');
 const app = express();
 const { networkInterfaces } = require('os');
 
+const fileUpload = require('express-fileupload');
+
 const PORT = 3000;
 
+
+// enable files upload
+app.use(fileUpload({
+    createParentPath: true
+}));
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -46,6 +53,25 @@ app.get('/webrtc', (req, res) => {
 app.get('/webrtc_nonvr', (req, res) => {
     res.sendFile(__dirname+"/pages/webrtc_nonvr.html");
     console.log("sent webrtc_nonvr.html");
+})
+
+// converting testing
+app.get('/convert', (req, res) => {
+    res.sendFile(__dirname+"/pages/convert.html");
+    console.log("sent convert.html");
+})
+// converting testing
+app.post('/convert', (req, res) => {
+    console.log(req.files.audio_file)
+
+    // Work on the file
+    fs.writeFileSync(__dirname+'/tmp/' + req.files.audio_file.name, Buffer.from(req.files.audio_file.data))
+
+    convertFile(__dirname+'/tmp/' + req.files.audio_file.name);
+
+    // Send the html page
+    res.download(__dirname+'/tmp/testOutput.mp3', req.files.audio_file.name + ".mp3");
+    console.log("sent convert.html");
 })
 
 app.use("/js", express.static(__dirname+'/scripts/'));
@@ -108,12 +134,24 @@ wss.on('connection', function(ws) {
 
 
 
+// for converting
+function convertFile(filename) {
+    console.log(filename)
+    if (filename.endsWith(".ogg")) {
+        execSync('ffmpeg -y -i \'' + filename + '\' -acodec libmp3lame \'' + __dirname+ "/tmp/testOutput.mp3\'")
+        console.log("Done with converting ogg --> mp3")
+    } else if (filename.endsWith(".weba") || filename.endsWith(".pcm")) {
+        execSync('ffmpeg -y -ac 2 -i \'' + filename +"\' -c:a libmp3lame -b:a 256k \'" +  __dirname + "/tmp/testOutput.mp3\'")
+        console.log("Done with converting pcm --> mp3")
+    }
+}
 
 /*
 ================================================================================
         WebRTC
 ================================================================================
 */
+
 
 /**
  * server mediasoup code for webrtc
@@ -190,7 +228,9 @@ function getMediasoupWorker() {
 const Room = require('./webrtc_server_scripts/Room')
 
 // Each peer is a user
-const Peer = require('./webrtc_server_scripts/Peer')
+const Peer = require('./webrtc_server_scripts/Peer');
+const { time } = require('console');
+const { execSync } = require('child_process');
 /**
  * roomList
  * {

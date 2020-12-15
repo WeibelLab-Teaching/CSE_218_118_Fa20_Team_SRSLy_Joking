@@ -50,6 +50,10 @@ function roomOpen() {
   reveal(exitButton)
   control.className = ''
   reveal_nostyle(videoMedia)
+
+  
+  reveal(startRecordButton)
+  hide(stopRecordButton)
 }
 
 function hide(elem) {
@@ -59,6 +63,11 @@ function hide(elem) {
 function reveal(elem) {
   elem.className = 'btn btn-block btn-dark btn-lg'
 }
+
+function reveal_red(elem) {
+  elem.className = 'btn btn-block btn-danger btn-lg'
+}
+
 
 function reveal_nostyle(elem) {
   elem.className = ''
@@ -108,6 +117,16 @@ function addListeners() {
       id: ApplicationState.id
     }))
   })
+
+  
+  rc.on(RoomClient.EVENTS.startRecord, () => {
+    hide(startRecordButton)
+    reveal_red(stopRecordButton)
+  })
+  rc.on(RoomClient.EVENTS.stopRecord, () => {
+    hide(stopRecordButton)
+    reveal(startRecordButton)
+  })
 }
 
 // Load mediaDevice options
@@ -128,6 +147,15 @@ navigator.mediaDevices.enumerateDevices().then(devices =>
   })
 )
 
+// Creates a recorder object for recording media
+let recorder = null
+
+function createRecorder() {
+  recorder = new Recorder();
+
+}
+
+createRecorder()
 
 // Setup callback functions for when users connect and disconnect
 socket.on('newProducers', PCPair._newProducerCallbackExecutor);
