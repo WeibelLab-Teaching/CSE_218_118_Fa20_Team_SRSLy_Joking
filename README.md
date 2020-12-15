@@ -129,3 +129,5 @@ You can find general support for the technologies we use here:
 - [Babylon.js](https://doc.babylonjs.com/) 
 - [Node.js](https://nodejs.org/en/)
 - [WebRTC](https://webrtc.org/)
+
+Additional background on the project can be found in our [Midterm Presentation](https://youtu.be/A6hXnWrjom4), and our [Final Presentation]( https://youtu.be/Ez_tEaSsgGo)
