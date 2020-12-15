@@ -7,7 +7,7 @@ Makes a streamer that streams vid
 */
 
 class VideoStreamer extends Streamer {
-        constructor(scene, momentum, pair, position=undefined, height = 1, resolution=[1920,1080]) {
+        constructor(scene, momentum, pair, position=undefined, height = .5, resolution=[1920,1080]) {
                 super(scene, momentum, pair, position);
                 this.xr = false;
                 this.height = height;
@@ -90,20 +90,23 @@ class VideoStreamer extends Streamer {
                 let vids = elms.filter(e=>e.tagName==="VIDEO");
                 if (vids.length === 0) {
                         PCPair.tagUnpairedDOM();
+                        alert("No Vids");
+                        LOG("No Vids");
                         return;
                 };
 
-                console.log("Updating video with", vids[0], this.mesh.getChildMeshes()[0].name);
+                LOG("Updating video with", vids[0], this.mesh.getChildMeshes()[0].name);
                 this.videoSrc = vids[0];
                 let texture = new BABYLON.VideoTexture(this.name, vids[0], scene);
                 this.videoPlane.material.diffuseTexture = texture;
+                alert("updated video.\n", this.videoSrc.id);
         }
 
         play() {
-                this.src.play();
+                this.videoSrc.play();
         }
         pause() {
-                this.src.pause();
+                this.videoSrc.pause();
         }
 
         get videoMesh() {

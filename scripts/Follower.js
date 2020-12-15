@@ -35,7 +35,7 @@ class Follower {
         let pos = math.squeeze(newPose.subset(math.index(math.range(0, 3), 3))).toArray();
 
         this.mesh.position.x = pos[0];
-        this.mesh.position.y = pos[1];
+        // this.mesh.position.y = pos[1];
         this.mesh.position.z = pos[2];
     }
 
@@ -139,7 +139,7 @@ class Follower {
      * Turns on the following behavior
      * @param {boolean} updateOffset force update the fixed distance from the camera?
      */
-    enable(updateOffset = false) {
+    enable(updateOffset = true) {
         // Set offset if needed
         if (!this.initialOffset || updateOffset) {
             this.setOffset();

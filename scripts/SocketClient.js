@@ -156,3 +156,14 @@ function pushAppState() {
         content: state
     }));
 }
+
+function LOG() {
+    let args = Array.prototype.slice.call(arguments);
+    let data = args.join(" ");
+
+    send(JSON.stringify({
+        type: "LOG",
+        data: data
+    }))
+    console.log(data);
+}

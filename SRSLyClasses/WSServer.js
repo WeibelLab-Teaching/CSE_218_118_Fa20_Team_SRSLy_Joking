@@ -80,6 +80,9 @@ function onMessage(conn, rawMessage) {
                     message: rawMessage
                 }));
                 break;
+            case "LOG":
+                console.log("[LOG]", msg.data);
+                break;
             case "POSE":
                 // update client's headpose
                 AppState.clients[client_index].headpose = msg.world.head;

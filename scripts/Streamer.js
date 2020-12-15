@@ -28,6 +28,9 @@ class Streamer {
     pcpair;
     xr;
 
+    dragAction;
+    __dragData;
+
     // ==========	Getter and Setter Properties	==========
     get position() {return this.mesh.position;}
     set position(value) {this.mesh.position = value;}
@@ -41,13 +44,19 @@ class Streamer {
         this.name = "Streamer" + ApplicationState.streamers.length;
         this.scene = scene;
         this.mesh = new BABYLON.TransformNode(this.name, this.scene);
-        this.mesh.scail
         this.videoSrc = undefined;
         this.audioSrc = undefined;
         this.pcpair = pair;
         this.xr = undefined;
         this._disposables = [];
         this._disposables.push(this.mesh);
+
+        this.__dragHandle = BABYLON.MeshBuilder.CreatePlane(this.name, {width:.2, height:.2}, this.scene);
+        this.__dragHandle.parent = this.mesh;
+        this.__dragHandle.locallyTranslate(new BABYLON.Vector3(0.4, -0.25, -0.2));
+        this.__dragHandle.material = new BABYLON.StandardMaterial("DragHandleMaterial", this.scene);
+        this.__dragHandle.material.diffuseTexture = new BABYLON.Texture("assets/axis.png", this.scene);
+        this.__dragHandle.material.diffuseTexture.hasAlpha = true;
 
         // Set/Generate Position
         if (!position) {
@@ -65,7 +74,17 @@ class Streamer {
         Streamer.streamers.push(this);
 
         // Destroy when WebRTC connection is lost
-        this.pcpair.addDestructorCallback(this.destructor.bind(this));
+        if (typeof(this.pcpair) !== "undefined") {
+            this.pcpair.addDestructorCallback(this.destructor.bind(this));
+        }
+
+        // Drag action
+        this.__dragHandle.actionManager = new BABYLON.ActionManager(this.scene);
+        this.dragAction = new BABYLON.ExecuteCodeAction(
+            BABYLON.ActionManager.OnPickDownTrigger, 
+            this.onDragStart.bind(this)
+        )
+        this.__dragHandle.actionManager.registerAction(this.dragAction);
     }
 
     destructor() {
@@ -127,6 +146,60 @@ class Streamer {
         }
 
         return streamer;
+    }
+
+    onDragStart() {
+        // this.follower.disable();
+        this.__dragData = {
+            "dragEndAction": new BABYLON.ExecuteCodeAction(
+                                BABYLON.ActionManager.OnPickUpTrigger, 
+                                this.onDragEnd.bind(this)
+                            ),
+            "plane": BABYLON.MeshBuilder.CreatePlane("constructionPlane", {height:10, width:10}, this.scene)
+        }
+
+        // Create Plane for construction
+        this.__dragData.plane.position = this.__dragHandle.position;
+        this.__dragData.plane.lookAt(this.scene.activeCamera.position); // hides it very well
+        this.__dragData.plane.material = new BABYLON.StandardMaterial("constructionMaterial");
+        this.__dragData.plane.material.alpha = 0; // hide it completely
+
+        // Create pointer drag and end click listeners
+        this.__dragHandle.actionManager.unregisterAction(this.dragAction);
+        this.__dragData["pointObservable"] = 
+        this.scene.onPointerObservable.add(this.onDragUpdate.bind(this));
+        // Register end drag on both the construction plane and on the mesh
+        this.__dragHandle.actionManager.registerAction(this.__dragData.dragEndAction);
+        this.__dragData.plane.actionManager = new BABYLON.ActionManager(this.scene);
+        this.__dragData.plane.actionManager.registerAction(this.__dragData.dragEndAction);
+    }
+    
+    onDragEnd() {
+        LOG("Drag End");
+        // this.mesh.parent = this.__dragData.startParent;
+
+        // Unregister pointer tracker
+        this.scene.onPointerObservable.remove(this.__dragData["pointObservable"]);
+
+        // Unregister drag end listener
+        this.__dragHandle.actionManager.unregisterAction(this.__dragData.dragEndAction);
+        // Remove construction plane
+        this.__dragData.plane.dispose();
+
+        // Reregister drag
+        this.__dragHandle.actionManager.registerAction(this.dragAction);
+    }
+
+    onDragUpdate(event) {
+        if (event.pickInfo.pickedMesh && event.pickInfo.pickedMesh.name === "constructionPlane") {
+            let pt = event.pickInfo.pickedPoint;
+            let new_pos = new BABYLON.Vector3(
+                pt.x - this.__dragHandle.position.x,
+                pt.y - this.__dragHandle.position.y,
+                pt.z - this.__dragHandle.position.z
+            )
+            this.mesh.position = new_pos;
+        }
     }
 
     get position() {

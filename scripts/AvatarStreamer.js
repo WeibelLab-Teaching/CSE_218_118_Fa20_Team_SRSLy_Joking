@@ -3,6 +3,7 @@ class AvatarStreamer extends Streamer {
 
     constructor(scene, momentum, pair, position=undefined, avatarUri="") {
         super(scene, momentum, pair, position);
+        // this.__dragHandle.position.z = -0.5;
 
         this.xr = true;
 
@@ -31,23 +32,9 @@ class AvatarStreamer extends Streamer {
             // Set body pose to something natural
             AvatarStreamer.setRestingPose(this.skeleton);
 
-            // Fix follower
-            // this.follower = new Follower(
-            //     this.skeleton.bones.filter(b=>b.name.match(/Hips/))[0], 
-            //     momentum, 
-            //     scene);
             this.follower._face_logic();
             this.follower.billboard(true, 2);
-
-
         }.bind(this));
-
-        // Import as scene
-        // BABYLON.SceneLoader.Append(avatarUri, "", scene, function(newScene) {
-        //     console.log("Loaded Avatar as scene", newScene);
-        //     this.mesh = newScene;
-        // }.bind(this));
-
     }
 
     serialize() {

@@ -51,9 +51,12 @@ function roomOpen() {
   control.className = ''
   reveal_nostyle(videoMedia)
 
-  
-  reveal(startRecordButton)
-  hide(stopRecordButton)
+  if (typeof(startRecordButton) !== "undefined"){
+    reveal(startRecordButton)
+  }
+  if (typeof(stopRecordButton) !== "undefined") {
+    hide(stopRecordButton)
+  }
 }
 
 function hide(elem) {

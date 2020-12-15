@@ -99,13 +99,18 @@ async function createScene(callback) {
 			pushAppState();
 		})
 
-	})
 
-	xrHelper.onAfterEnteringVRObservable.add(() => {
-		// Set camera
-		userCamera = scene.activeCamera; //scene.cameras.filter(c=>c.id==="VRDeviceOrientationVRHelper_L")[0];
-		// guiPanel.linkToTransformNode(userCamera);
-		p.target = scene.activeCamera;
+		// Run AFTER entering VR
+		setTimeout(() => {
+			// Set camera
+			userCamera = scene.activeCamera; //scene.cameras.filter(c=>c.id==="VRDeviceOrientationVRHelper_L")[0];
+			guiPanel.linkToTransformNode(scene.activeCamera);
+			p.target = scene.activeCamera;
+			LOG(`Active Camera is now '${scene.activeCamera.name}'`);
+	
+			// Send user pose
+			sendPose();
+		}, 1000)
 	})
 
 	xrHelper.onExitingVR.add(() => {
@@ -118,11 +123,20 @@ async function createScene(callback) {
 		PCPair.announceIds();
 		pushAppState();
 
+		// Run AFTER back as desktop
+		setTimeout(() => {
+			// Set camera
+			userCamera = scene.activeCamera;
+			guiPanel.linkToTransformNode(scene.activeCamera);
+			p.target = scene.activeCamera;
+			LOG(`Active Camera is now '${scene.activeCamera.name}'`);
+			for (let i=0; i<10; i++) {
+				setTimeout(() => {
+					LOG(`Active Camera '${scene.activeCamera.name}' is now at (${scene.activeCamera.position.x}, ${scene.activeCamera.position.y}, ${scene.activeCamera.position.z})`);
+				}, i*300)
+			}
 
-		// Set camera
-		userCamera = scene.cameras.filter(c=>c.id==="deviceOrientationVRHelper")[0];
-		guiPanel.linkToTransformNode(userCamera);
-		p.target = scene.activeCamera;
+		}, 1000)
 	});
 
 	// Set Ground Plane
@@ -262,8 +276,6 @@ window.onload = function () {
 
 		// Establish Websocket connection and load ApplicationState
 		EstablishWebsocketConnection((conn) => {
-			// Send user pose
-			sendPose();
 			// Connect to WebRTC
 			joinRoom(ApplicationState.id, ApplicationState.room);
 			// Load playspace
