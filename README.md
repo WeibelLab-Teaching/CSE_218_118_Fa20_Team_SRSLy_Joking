@@ -84,28 +84,45 @@ Non-XR users can join meetings using the desktop client. These users can also sh
 
 ## Getting Started
 1. Download Node.js and NPM
+   1. Windows and Mac: [download installer](https://nodejs.org/en/download/)
+   2. Linux: `sudo apt install nodejs npm`
 2. Clone this repository - `git clone https://github.com/WeibelLab-Teaching/CSE_218_118_Fa20_Team_SRSLy_Joking.git`
-2. Enter the project folder, run `npm install`. Let the downloads finish.
-3. Run `npm start` to run the server
-4. Copy the server IP and modify announcedIp in webrtc_server_scripts/config.js to your local server ip address in order to get webrtc working. This ensures the server can connect clients to itself and forward streams to other clients.
+3. Enter the project folder, run `npm install`. Let the downloads finish.
+   This will install a series of dependencies through the Node Package Manager (NPM) these packages are all monitored by NPM and checked for security.
+4. Set WebRTC Host IP
+   1. Get your local ip address:
+      1. Open terminal/powershell
+         1. Mac/Linux: `ifconfig | grep 192`
+         2. Windows: `ipconfig`
+      2. Use the address that is of the form `192.168.x.x` (eg: `192.168.1.127`)
+   2. Add your IP to `.../webrtc_server_scripts/config.js` line 63: `announcedIp:'192.168.1.127' // replace by public IP address`
+5. From Terminal, run `npm start` to start the server
+6. Go to https://localhost 
+   1. If you want to access from remote devices, you will need to generate a self signed certificate. Instructions for doing this can be found [here](https://nodejs.org/en/knowledge/HTTP/servers/how-to-create-a-HTTPS-server/).
+   2. Copy the `cert` and `key` files into `.../cert/`
+   3. You can now access secure content (video feeds) from any device in your local area network.
 
 ### File Structure
 - [index.js](https://github.com/WeibelLab-Teaching/CSE_218_118_Fa20_Team_SRSLy_Joking/blob/main/index.js) is the main server file and is used to initialize all routes, the https server, and initializes all the webrtc_server_script objects and logic for webrtc rooms.
 
-- [SRSLyClasses](https://github.com/WeibelLab-Teaching/CSE_218_118_Fa20_Team_SRSLy_Joking/tree/main/SRSLyClasses)
+- [SRSLyClasses](https://github.com/WeibelLab-Teaching/CSE_218_118_Fa20_Team_SRSLy_Joking/tree/main/SRSLyClasses) is a folder containing scripts specific for running the server
 
 - [assets](https://github.com/WeibelLab-Teaching/CSE_218_118_Fa20_Team_SRSLy_Joking/tree/main/assets) includes the visual assets (like 3D models) used in the app.
 
 - [pages](https://github.com/WeibelLab-Teaching/CSE_218_118_Fa20_Team_SRSLy_Joking/tree/main/pages)
   + [main](https://github.com/WeibelLab-Teaching/CSE_218_118_Fa20_Team_SRSLy_Joking/blob/main/pages/main.html): Main XR application
-  + [webrtc.html](https://github.com/WeibelLab-Teaching/CSE_218_118_Fa20_Team_SRSLy_Joking/blob/main/pages/webrtc.html): 
+  + [webrtc.html](https://github.com/WeibelLab-Teaching/CSE_218_118_Fa20_Team_SRSLy_Joking/blob/main/pages/webrtc.html): A development version of [main](https://github.com/WeibelLab-Teaching/CSE_218_118_Fa20_Team_SRSLy_Joking/blob/main/pages/main.html)
   + [webrtc_nonvr](https://github.com/WeibelLab-Teaching/CSE_218_118_Fa20_Team_SRSLy_Joking/blob/main/pages/webrtc_nonvr.html): Desktop Client
 
 - [scripts](https://github.com/WeibelLab-Teaching/CSE_218_118_Fa20_Team_SRSLy_Joking/tree/main/scripts) houses the client side scripts.
   + [RoomClient.js](https://github.com/WeibelLab-Teaching/CSE_218_118_Fa20_Team_SRSLy_Joking/blob/main/scripts/RoomClient.js): Client side organization of all the webrtc information on the client pov
-  + [Streamer.js](https://github.com/WeibelLab-Teaching/CSE_218_118_Fa20_Team_SRSLy_Joking/blob/main/scripts/Streamer.js): Client side organization of videos of different participants
+  + [Streamer.js](https://github.com/WeibelLab-Teaching/CSE_218_118_Fa20_Team_SRSLy_Joking/blob/main/scripts/Streamer.js): Client side organization of videos of different participants (`VideoStreamer.js` and `AvatarStreamer.js` are children of this class)
+  + [PlaySpace.js](https://github.com/WeibelLab-Teaching/CSE_218_118_Fa20_Team_SRSLy_Joking/blob/main/scripts/PlaySpace.js): A class for managing the area in which the user can walk around in
++ [Environment.js](https://github.com/WeibelLab-Teaching/CSE_218_118_Fa20_Team_SRSLy_Joking/blob/main/scripts/Environment.js): Class managing the generation of the virtual environments for the users
+  + [Momentum.js](https://github.com/WeibelLab-Teaching/CSE_218_118_Fa20_Team_SRSLy_Joking/blob/main/scripts/Momentum.js) and [Follower.js](https://github.com/WeibelLab-Teaching/CSE_218_118_Fa20_Team_SRSLy_Joking/blob/main/scripts/Follower.js) keep elements with the user as they walk
   + [webrtc_index.js](https://github.com/WeibelLab-Teaching/CSE_218_118_Fa20_Team_SRSLy_Joking/blob/main/scripts/webrtc_index.js): A file to declare all client-side functions that help with joining rooms and setting up mic/video devices to be used for webrtc
-
+  + [PCPair.js](https://github.com/WeibelLab-Teaching/CSE_218_118_Fa20_Team_SRSLy_Joking/blob/main/scripts/PCPair.js): Keeps sockets, webrtc producers and consumers, video streamers, and avatars streamers organized and linked together.
+  
 - [webrtc_server_scripts](https://github.com/WeibelLab-Teaching/CSE_218_118_Fa20_Team_SRSLy_Joking/tree/main/webrtc_server_scripts) help organize and setup the data for user's webrtc transports and a meeting room's webrtc information.
 
 
