@@ -74,10 +74,17 @@ Non-XR users can join meetings using the desktop client. These users can also sh
 
 <img src="https://user-images.githubusercontent.com/23105064/102205516-24daff00-3e80-11eb-99ca-2f92787f0519.png" width="550"/>
 
+
+
 ### WebRTC
 <img src="https://user-images.githubusercontent.com/23105064/102205273-d4fc3800-3e7f-11eb-9160-ede692048f79.png" width="800"/>
 
+We use an SFU architecture for WebRTC to ensure that numerous clients can simultaneously connect and communicate.
+
 ### Managing WebRTC and Avatars
+
+These WebRTC connections consist of various identified elements (producers, consumers, and sockets); all of which are unlinked. In order to link these and their respective Videos and Avatars, we created a series of classes and event systems which allow for identifiers to propagate outwards, accumulating pairs by various means so that everything syncs together.
+
 <img src="https://user-images.githubusercontent.com/23105064/102205271-d463a180-3e7f-11eb-874e-36b2e26f9c34.jpg" width="800"/>
 
 
