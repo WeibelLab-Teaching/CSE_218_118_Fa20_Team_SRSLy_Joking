@@ -13,6 +13,7 @@ Walk and Talk is a platform for mobile teleconferencing in extended reality (XR)
     + [Participant Positioning](#participant-positioning)
     + [Recording Audio Snippets](#recording-audio-snippets)
     + [Desktop Client](#desktop-client)
+  * [Demo](#demo)
   * [System Architecture](#system-architecture)
     + [WebRTC](#webrtc)
     + [Managing WebRTC and Avatars](#managing-webrtc-and-avatars)
@@ -68,6 +69,11 @@ Non-XR users can join meetings using the desktop client. These users can also sh
 
 <img src="https://user-images.githubusercontent.com/23105064/102206107-f578c200-3e80-11eb-93b9-a68fec39ae68.png" width="900"/>
 
+## Demo
+Click on the image below to view a demo of Walk and Talk on the Oculus Quest.
+
+[![quest](https://user-images.githubusercontent.com/23105064/102266345-2c74c500-3ecd-11eb-9c07-dd4b079f2591.png)](https://youtu.be/HYr7w0oMrwI)
+
 
 
 ## System Architecture
@@ -77,9 +83,9 @@ Non-XR users can join meetings using the desktop client. These users can also sh
 
 
 ### WebRTC
-<img src="https://user-images.githubusercontent.com/23105064/102205273-d4fc3800-3e7f-11eb-9160-ede692048f79.png" width="800"/>
+We use an SFU architecture for WebRTC (with the MediaSoup package) to ensure that numerous clients can simultaneously connect and communicate. This diagram illustrates how a user can join a room or meeting.
 
-We use an SFU architecture for WebRTC to ensure that numerous clients can simultaneously connect and communicate.
+<img src="https://user-images.githubusercontent.com/23105064/102205273-d4fc3800-3e7f-11eb-9160-ede692048f79.png" width="800"/> 
 
 ### Managing WebRTC and Avatars
 
