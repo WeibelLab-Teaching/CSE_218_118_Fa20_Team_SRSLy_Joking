@@ -17,6 +17,9 @@ Walk and Talk is a platform for mobile teleconferencing in extended reality (XR)
     + [WebRTC](#webrtc)
     + [Managing WebRTC and Avatars](#managing-webrtc-and-avatars)
   * [Getting Started](#getting-started)
+    + [File Structure](#file-structure)
+  * [The Walk and Talk Team](#the-walk-and-talk-team)
+  * [Getting Help](#getting-help)
 
 
 ## Motivation and Impact
@@ -80,7 +83,8 @@ Non-XR users can join meetings using the desktop client. These users can also sh
 
 ## Getting Started
 1. Download Node.js and NPM
-2. In the project folder, run `npm install`. Let the downloads finish.
+2. Clone this repository - `git clone https://github.com/WeibelLab-Teaching/CSE_218_118_Fa20_Team_SRSLy_Joking.git`
+2. Enter the project folder, run `npm install`. Let the downloads finish.
 3. Run `npm start` to run the server
 4. Copy the server IP and modify announcedIp in webrtc_server_scripts/config.js to your local server ip address in order to get webrtc working. This ensures the server can connect clients to itself and forward streams to other clients.
 
@@ -114,5 +118,12 @@ Team Members
 - [Stephen Liu](https://github.com/qixinliu): Undergraduate student at UC San Diego
 - [Janet Johnson](http://janetjohnson.info/): PhD student at UC San Diego
 
+
+
 ## Getting Help 
-Contact our team at [srslyjoking.ucsd@gmail.com](mailto:srslyjoking.ucsd@gmail.com?subject=[GitHubQuery]%20Walk&Talk) for any help regarding this repository.
+The Walk and Talk team is responsible for maintaining this project. Should you need additional help, you can contact our team at [srslyjoking.ucsd@gmail.com](mailto:srslyjoking.ucsd@gmail.com?subject=[GitHubQuery]%20Walk&Talk).
+
+You can find general support for the technologies we use here:
+- [Babylon.js](https://doc.babylonjs.com/) 
+- [Node.js](https://nodejs.org/en/)
+- [WebRTC](https://webrtc.org/).
