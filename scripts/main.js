@@ -92,6 +92,14 @@ async function createScene(callback) {
 			PCPair.announceIds();
 			pushAppState();
 		})
+
+	})
+
+	xrHelper.onAfterEnteringVRObservable.add(() => {
+		// Set camera
+		userCamera = scene.activeCamera; //scene.cameras.filter(c=>c.id==="VRDeviceOrientationVRHelper_L")[0];
+		guiPanel.linkToTransformNode(userCamera);
+		p.target = scene.activeCamera;
 	})
 
 	xrHelper.onExitingVR.add(() => {
@@ -103,6 +111,12 @@ async function createScene(callback) {
 		ApplicationState.xr = false;
 		PCPair.announceIds();
 		pushAppState();
+
+
+		// Set camera
+		userCamera = scene.cameras.filter(c=>c.id==="deviceOrientationVRHelper")[0];
+		guiPanel.linkToTransformNode(userCamera);
+		p.target = scene.activeCamera;
 	});
 
 	// Set Ground Plane
