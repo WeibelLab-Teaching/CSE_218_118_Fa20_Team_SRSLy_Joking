@@ -112,6 +112,7 @@ Non-XR users can join meetings using the desktop client. These users can also sh
 
 ## The Walk and Talk Team
 Team Name: SRSLy Joking
+
 Team Members
 - [Eric Siu](https://siueric0010.github.io/): Undergraduate student at UC San Diego
 - [Naba Rizvi](https://nrizvi.github.io/): PhD student at UC San Diego
