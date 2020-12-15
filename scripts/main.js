@@ -317,6 +317,11 @@ function onRecordPressed() {
 	}
 
 	// TODO: Implement acutal recording
+	if(recording) {
+		recorder.start();
+	} else {
+		recorder.stop();
+	}
 }
 
 

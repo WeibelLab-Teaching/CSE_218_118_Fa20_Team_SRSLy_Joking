@@ -6,9 +6,12 @@
     <script src="socket.io/socket.io.js"></script>
     <script src="js/modules/mediasoupclient.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/EventEmitter/5.2.8/EventEmitter.min.js"></script>
-    <script src="js/RoomClient.js"></script>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
+
+    <script src="js/RoomClient.js"></script>
+    <script src="js/Recorder.js"></script>
+    
     <style>
 
         body {
@@ -113,7 +116,7 @@
                         <h6 style="float: right;">Enter Meeting ID</h6>
                     </div>
                     <div class="col-sm-4" >
-                        <input id="roomidInput" value="123" type="text" class="textBox"/>
+                        <input id="roomidInput" value="118218" type="text" class="textBox"/>
                     </div>
                 </div>
             </div>
@@ -204,6 +207,15 @@
                     <i id="exit-icon" class="fas fa-phone-slash"></i>
                 </button>
             </div>
+            
+            <div class="col-md-2 text-center">
+                <button id='startRecordButton' type = 'button' class='btn btn-block btn-dark btn-lg hidden' onclick="recorder.start()"> 
+                    <i id="record-icon" class="fas fa-circle"></i>
+                </button>
+                <button id='stopRecordButton' type = 'button' class='btn btn-block btn-danger btn-lg hidden' onclick="recorder.stop()"> 
+                    <i id="record-icon" class="fas fa-circle"></i>
+                </button>
+            </div>
         </div>
         
         <br />
@@ -221,6 +233,7 @@
         </div>
 
         <div id="remoteAudios"></div>
+        <div id="soundClips"></div>
 
     </div>
 </body>
