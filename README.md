@@ -112,8 +112,6 @@ These WebRTC connections consist of various identified elements (producers, cons
 ### File Structure
 - [index.js](https://github.com/WeibelLab-Teaching/CSE_218_118_Fa20_Team_SRSLy_Joking/blob/main/index.js) is the main server file and is used to initialize all routes, the https server, and initializes all the webrtc_server_script objects and logic for webrtc rooms.
 
-- [scripts_serverside](https://github.com/WeibelLab-Teaching/CSE_218_118_Fa20_Team_SRSLy_Joking/tree/main/scripts_serverside) is a folder containing scripts specific for running the server and setup the data for user's webrtc transports and a meeting room's webrtc information.
-
 - [assets](https://github.com/WeibelLab-Teaching/CSE_218_118_Fa20_Team_SRSLy_Joking/tree/main/assets) includes the visual assets (like 3D models) used in the app.
 
 - [pages](https://github.com/WeibelLab-Teaching/CSE_218_118_Fa20_Team_SRSLy_Joking/tree/main/pages)
@@ -129,7 +127,7 @@ These WebRTC connections consist of various identified elements (producers, cons
   + [Momentum.js](https://github.com/WeibelLab-Teaching/CSE_218_118_Fa20_Team_SRSLy_Joking/blob/main/scripts/Momentum.js) and [Follower.js](https://github.com/WeibelLab-Teaching/CSE_218_118_Fa20_Team_SRSLy_Joking/blob/main/scripts/Follower.js) keep elements with the user as they walk
   + [webrtc_index.js](https://github.com/WeibelLab-Teaching/CSE_218_118_Fa20_Team_SRSLy_Joking/blob/main/scripts/webrtc_index.js): A file to declare all client-side functions that help with joining rooms and setting up mic/video devices to be used for webrtc
   + [PCPair.js](https://github.com/WeibelLab-Teaching/CSE_218_118_Fa20_Team_SRSLy_Joking/blob/main/scripts/PCPair.js): Keeps sockets, webrtc producers and consumers, video streamers, and avatars streamers organized and linked together.
-  
+- [scripts_serverside](https://github.com/WeibelLab-Teaching/CSE_218_118_Fa20_Team_SRSLy_Joking/tree/main/scripts_serverside) is a folder containing scripts specific for running the server and setup the data for user's webrtc transports and a meeting room's webrtc information.
 
 
 
