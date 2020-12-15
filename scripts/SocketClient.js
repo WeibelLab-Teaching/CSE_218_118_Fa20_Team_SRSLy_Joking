@@ -139,8 +139,13 @@ function send(message) {
 
 function pushAppState() {
     // Copy and serialize Application state
-    let state = JSON.parse(JSON.stringify(ApplicationState))
+    let state = {}
+    for (let key of Object.keys(ApplicationState)) {
+        if (key === "streamers") continue; // skip this one
+        state[key] = JSON.parse(JSON.stringify(ApplicationState[key]));
+    }
     // serialize streamers
+    state["streamers"]=[];
     for (let i in state.streamers) {
         state.streamers[i] = state.streamers[i].serialize();
     }

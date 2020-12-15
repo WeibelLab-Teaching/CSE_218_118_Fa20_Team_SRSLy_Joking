@@ -246,7 +246,7 @@ class Environment {
         Environment.guiPanel = new BABYLON.GUI.StackPanel3D();
         Environment.guiPanel.margin = 0.02;
         Environment.guiManager.addControl(Environment.guiPanel);
-        Environment.guiPanel.linkToTransformNode(userCamera);
+        Environment.guiPanel.linkToTransformNode(guiPanel._node.parent);
         Environment.guiPanel.node.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
         Environment.guiPanel.position = new BABYLON.Vector3(-0.09, -0.15, 1);
         Environment.guiPanel.node.rotation = new BABYLON.Vector3(Math.PI / 3, 0, 0);

@@ -12,6 +12,9 @@ var webRTCStreamer = undefined;
 
 var playSpace;
 
+var guiPanel;
+var guiManager;
+
 
 var recordButton;
 
@@ -98,7 +101,7 @@ async function createScene(callback) {
 	xrHelper.onAfterEnteringVRObservable.add(() => {
 		// Set camera
 		userCamera = scene.activeCamera; //scene.cameras.filter(c=>c.id==="VRDeviceOrientationVRHelper_L")[0];
-		guiPanel.linkToTransformNode(userCamera);
+		// guiPanel.linkToTransformNode(userCamera);
 		p.target = scene.activeCamera;
 	})
 
@@ -153,8 +156,8 @@ async function createScene(callback) {
 	// new BABYLON.CubeTexture("assets/skybox1/TropicalSunnyDay", scene);
 
 	// Set UI Control panel
-	var guiManager = new BABYLON.GUI.GUI3DManager(scene);
-	var guiPanel = new BABYLON.GUI.StackPanel3D();
+	guiManager = new BABYLON.GUI.GUI3DManager(scene);
+	guiPanel = new BABYLON.GUI.StackPanel3D();
 	guiPanel.margin = 0.02;
 	guiManager.addControl(guiPanel);
 	guiPanel.linkToTransformNode(userCamera);

@@ -200,7 +200,7 @@ class PlaySpace {
         this.guiPanel = new BABYLON.GUI.StackPanel3D();
         this.guiPanel.margin = 0.02;
         this.guiManager.addControl(this.guiPanel);
-        this.guiPanel.linkToTransformNode(userCamera);
+        this.guiPanel.linkToTransformNode(guiPanel._node.parent);
         this.guiPanel.node.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
         this.guiPanel.position = new BABYLON.Vector3(-0.09, -0.15, 1);
         this.guiPanel.node.rotation = new BABYLON.Vector3(Math.PI / 3, 0, 0);
