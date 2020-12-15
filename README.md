@@ -70,9 +70,7 @@ Non-XR users can join meetings using the desktop client. These users can also sh
 <img src="https://user-images.githubusercontent.com/23105064/102206107-f578c200-3e80-11eb-93b9-a68fec39ae68.png" width="900"/>
 
 ## Demo
-Click on the image below to view a demo of Walk and Talk on the Oculus Quest.
-
-[![quest](https://user-images.githubusercontent.com/23105064/102266345-2c74c500-3ecd-11eb-9c07-dd4b079f2591.png)](https://youtu.be/HYr7w0oMrwI)
+[![demo](https://user-images.githubusercontent.com/23105064/102267918-6c3cac00-3ecf-11eb-8a11-9fec6b8a5a95.png)](https://youtu.be/lbZkL-YcHFk)
 
 
 
