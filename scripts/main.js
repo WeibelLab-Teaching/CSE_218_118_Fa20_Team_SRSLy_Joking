@@ -272,33 +272,6 @@ window.onload = function () {
 	});
 }
 
-function removeStreamer(uri_or_video_elm) {
-	let target;
-
-	// Find the video element if given a URL
-	for (let streamer of ApplicationState.streamers) {
-		if (typeof (uri_or_video_elm) === "string") {
-			if (streamer.src.src === uri_or_video_elm) {
-				target = streamer;
-				break;
-			}
-		} else {
-			if (streamer.src === uri_or_video_elm) {
-				target = streamer;
-				break;
-			}
-		}
-	}
-
-	console.log("Removing", target);
-
-	// Remove from AppState
-	ApplicationState.streamers.splice(ApplicationState.streamers.indexOf(target), 1);
-
-	// Remove visuals
-	target.destructor();
-}
-
 function getStreamerPosition(video) {
 	// return a random vector if it does not exist.
 	let returnPosition = positionController.getNewPosition(video);
