@@ -93,7 +93,7 @@ createServer(function connectionListener (conn) {
         connections.splice(connections.indexOf(conn), 1);
     })
 })
-.listen(8000, function() {
+.listen(443, function() {
 
 })
 

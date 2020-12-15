@@ -46,10 +46,39 @@ class PCPair {
 
     get DOMElements() {
         let elms = [];
-        for (let consumer of this.consumers) {
-            elms.push(document.getElementById(consumer));
+        // for (let consumer of this.consumers) {
+        //     elms.push(document.getElementById(consumer));
+        // }
+
+        let videoElms = document.getElementById("streams").getElementsByTagName("video");
+        let audioElms = document.getElementById("remoteAudios").getElementsByTagName("audio");
+        
+        for (let videoElm of videoElms) {
+            if (videoElm.getAttribute("webrtc_socket_id") === this.socket) {
+                elms.push(videoElm);
+            }
         }
+        for (let audioElm of audioElms) {
+            if (audioElm.getAttribute("webrtc_socket_id") === this.socket) {
+                elms.push(audioElm);
+            }
+        }
+
+        // let matchingVideos = videoElms.filter(v=>v.getAttribute("webrtc_socket_id") === this.socket);
+        // let matchingAudios = audioElms.filter(a=>a.getAttribute("webrtc_socket_id") === this.socket);
+        // elms = matchingVideos.concat(matchingAudios);
+
         return elms;
+    }
+
+    get DOMVideos() {
+        let elms = this.DOMElements;
+        return elms.filter(e=>e.tagName==="VIDEO");
+    }
+
+    get DOMAudios() {
+        let elms = this.DOMElements;
+        return elms.filter(e=>e.tagName==="AUDIO");
     }
 
     get streamer() {
@@ -157,46 +186,97 @@ class PCPair {
         let pid = pidata[0].producer_id;
         let sid = pidata[0].producer_socket_id;
         console.log("[PCPair] Producer ID", pid, "sid", sid);
+        let stream = await rc.getConsumeStream(pid);
 
-        setTimeout(async function() {
-            let stream = await rc.getConsumeStream(pid);
-            let elmid = document.getElementById("remoteAudios").getElementsByTagName("audio")[0].id
-            let cid = elmid; //stream.consumer._id;
+        // Check if a CPPair with the pid exists
+        let {pair, matched} = PCPair.get(pid, null, sid);
+        console.log("[PCPair] Found pair", pair, matched);
+        if (pair) {
+            switch (matched) {
+            case "producer":
+                console.error("No way of getting cid");
+                // pair.consumers.push(cid);
+                break;
+            case "consumers":
+                pair.producers.push(pid);
+                break;
+            case "socket":
+                pair.producers.push(pid);
+                // pair.consumers.push(cid);
+                break;
+            }
+        }
+        else {
+            pair = new PCPair(pid, null, sid);
+        }
 
-            // ALTERNATIVELY
-            // console.log("[PCPair] Looking for real cid. Originally set to", cid);
-            // console.log("Rc Consumers", rc.consumers);
-            // rc.consumers.forEach(function (consumer) {
-            //     console.warn("Checking", consumer);
-            //     if (consumer._producerId === pid) {
-            //         cid = consumer._id;
-            //         console.log("Found real", consumer._id);
-            //         return;
-            //     }
-            // })
-            // console.log("Updated to", cid);
+        setTimeout(() => {PCPair.tagDOM(sid)}, 150);
+    }
 
-            // Check if a CPPair with the pid exists
-            let {pair, matched} = PCPair.get(pid, cid, sid);
-            console.log("[PCPair] Found pair", pair, matched);
-            if (pair) {
-                switch (matched) {
-                case "producer":
-                    pair.consumers.push(cid);
-                    break;
-                case "consumers":
-                    pair.producers.push(pid);
-                    break;
-                case "socket":
-                    pair.producers.push(pid);
-                    pair.consumers.push(cid);
-                    break;
-                }
+    static clean() {
+        for(let i=PCPair.Pairs.length-1; i>=0; i--) {
+            if (!PCPair.Pairs[i].socket) {
+                let p = PCPair.Pairs.splice(i, 1)
+                p[0].destructor();
+            }
+        }
+    }
+
+    static tagDOM(sid) {
+        // Tag Video and Audio Elements
+        let videoElms = document.getElementById("streams").getElementsByTagName("video");
+        let audioElms = document.getElementById("remoteAudios").getElementsByTagName("audio");
+        console.log("Creating Consumer Pairing", videoElms, audioElms);
+        if (videoElms.length > 0) {
+            videoElms[videoElms.length-1].setAttribute("webrtc_socket_id", sid);
+        }
+        if (audioElms.length > 0) {
+            audioElms[audioElms.length-1].setAttribute("webrtc_socket_id", sid);
+        }
+    }
+
+    static tagUnpairedDOM() {
+        PCPair.clean();
+        let videoElms = document.getElementById("streams").getElementsByTagName("video");
+        let audioElms = document.getElementById("remoteAudios").getElementsByTagName("audio");
+        let unmatched = [];
+        console.log(videoElms.length, "videos found for", PCPair.Pairs.length, "PCPairs");
+        
+        // ignore the videos that are already paired up
+        for (let p of PCPair.Pairs) {
+            let vid = p.DOMVideos
+            if (vid.length !== 0) {
+                let i = videoElms.indexOf(vid);
+                videoElms.splice(i, 1);
             }
             else {
-                pair = new PCPair(pid, cid, sid);
+                unmatched.push(p);
             }
-        }.bind(pid, sid, document), 100)
+        }
+        console.log(videoElms, "unpaired videos with", unmatched.length, "pairs without matches", PCPair.Pairs.map(p=>p.DOMVideos));
+
+        let i=0;
+        for (let p of unmatched) {
+            try {
+                let m = videoElms[i]
+                i++;
+                console.log("Matched", m);
+                m.setAttribute("webrtc_socket_id", p.socket);
+                console.log("Assigned to", p);
+                p.consumers.push(m.id);
+            }
+            catch {
+                console.log("Ran out of matches");
+                break;
+            }
+        }
+
+        // Update streamers
+        for (let p of PCPair.Pairs) {
+            if (p instanceof VideoStreamer) {
+                p.streamer.updateVideo();
+            }
+        }
     }
 
     /**

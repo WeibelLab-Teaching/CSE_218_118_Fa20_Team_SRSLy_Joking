@@ -4,7 +4,7 @@ class Momentum {
      * Object for monitoring an object's movements.
      * You must implement the update loop. eg:
      * 
-     * p = new Momentum(scene.activeCamera);
+     * p = new Momentum(userCamera);
      * scene.onBeforeRenderObservable.add(function() {
      *      p.recordPose();
      * })
@@ -22,7 +22,7 @@ class Momentum {
      */
     recordPose() {
         let pos = this.target.position.asArray();
-        let rot = this.target.rotation.asArray();
+        let rot = this.target.rotationQuaternion.toEulerAngles().asArray();
         let pose = new Pose(pos, rot);
         let timestamp = new Date().getTime();
 

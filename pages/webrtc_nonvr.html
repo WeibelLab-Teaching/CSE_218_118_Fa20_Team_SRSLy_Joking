@@ -84,7 +84,7 @@
         }
 
         #buttons-container {
-            position: absolute;
+            position: static;
             z-index: 2;  
             padding: 25px;
             width: 100vw;
@@ -180,18 +180,19 @@
         <div id="buttons-container" class="row justify-content-center footer">
             <div class="col-md-2 text-center">
                 <button id='startAudioButton' type = 'button' class='btn btn-block btn-dark btn-lg hidden' onclick="rc.produce(RoomClient.mediaType.audio, audioSelect.value)">
-                    <i id="mic-icon" class="fas fa-microphone"></i>
+                    <i id="mic-mute-icon" class="fas fa-microphone-slash"></i>
+                    
                 </button>
                 <button id='stopAudioButton' type = 'button' class='btn btn-block btn-dark btn-lg hidden' onclick="rc.closeProducer(RoomClient.mediaType.audio)">
-                    <i id="mic-mute-icon" class="fas fa-microphone-slash"></i>
+                    <i id="mic-icon" class="fas fa-microphone"></i>
                 </button>
             </div>
             <div class="col-md-2 text-center">
                 <button id='startVideoButton' type = 'button' class='btn btn-block btn-dark btn-lg hidden' onclick="rc.produce(RoomClient.mediaType.video, videoSelect.value)">
-                    <i id="video-icon" class="fas fa-video"></i>
+                    <i id="video-stop-icon" class="fas fa-video-slash"></i>
                 </button>
                 <button id='stopVideoButton' type = 'button' class='btn btn-block btn-dark btn-lg hidden' onclick="rc.closeProducer(RoomClient.mediaType.video)">
-                    <i id="video-stop-icon" class="fas fa-video-slash"></i>
+                    <i id="video-icon" class="fas fa-video"></i>
                 </button>
             </div>
             <div class="col-md-2 text-center">

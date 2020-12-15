@@ -7,7 +7,7 @@ Makes a streamer that streams vid
 */
 
 class VideoStreamer extends Streamer {
-        constructor(scene, momentum, pair, position=undefined, height = 1, resolution=[1920,1080]) {
+        constructor(scene, momentum, pair, position=undefined, height = .5, resolution=[1920,1080]) {
                 super(scene, momentum, pair, position);
                 this.xr = false;
                 this.height = height;
@@ -25,12 +25,36 @@ class VideoStreamer extends Streamer {
 
                 // Create a material from the video
                 let material = new BABYLON.StandardMaterial(this.name + "Mat", scene);
-                let texture = new BABYLON.VideoTexture(this.name, "/assets/samplevid.mp4", scene, true, false);
-                material.diffuseTexture = texture;
+                let elms = this.pcpair.DOMElements;
+                let vids = elms.filter(e=>e.tagName==="VIDEO");
+                if (vids.length > 0) {
+                        videoSrc = vids[0];
+                        let texture = new BABYLON.VideoTexture(this.name, vids[0], scene);
+                        material.diffuseTexture = texture;
+                }
                 video.material = material;
+                this.videoPlane = video;
 
                 // billboard
                 this.follower.billboard(true);
+
+                // Add update listeners
+                function f() {
+                        setTimeout(this.updateVideo.bind(this), 3000);
+                }
+                socket.on('newProducers', f.bind(this));
+                socket.on('newConsumers', f.bind(this));
+
+                // Allow click to update video
+                if (!this.videoPlane.actionManager) {
+                        this.videoPlane.actionManager = new BABYLON.ActionManager(scene);
+                }
+                let clickAction = new BABYLON.ExecuteCodeAction(
+                        BABYLON.ActionManager.OnPickTrigger, 
+                        this.updateVideo.bind(this)
+                )
+
+                this.videoPlane.actionManager.registerAction(clickAction);
         }
 
         serialize() {
@@ -60,17 +84,27 @@ class VideoStreamer extends Streamer {
         }
 
         updateVideo() {
-                let material = new BABYLON.StandardMaterial(this.name + "Mat", scene);
-                let texture = new BABYLON.VideoTexture(this.name, "/assets/samplevid.mp4", scene, true, false);
-                material.diffuseTexture = texture;
-                video.material = material;
+                console.log("Updating Video. pair", this.pcpair);
+                let elms = this.pcpair.DOMElements;
+                console.log(elms);
+                let vids = elms.filter(e=>e.tagName==="VIDEO");
+                if (vids.length === 0) {
+                        PCPair.tagUnpairedDOM();
+                        LOG("No Vids");
+                        return;
+                };
+
+                LOG("Updating video with", vids[0], this.mesh.getChildMeshes()[0].name);
+                this.videoSrc = vids[0];
+                let texture = new BABYLON.VideoTexture(this.name, vids[0], scene);
+                this.videoPlane.material.diffuseTexture = texture;
         }
 
         play() {
-                this.src.play();
+                this.videoSrc.play();
         }
         pause() {
-                this.src.pause();
+                this.videoSrc.pause();
         }
 
         get videoMesh() {

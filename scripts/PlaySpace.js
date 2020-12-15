@@ -200,7 +200,7 @@ class PlaySpace {
         this.guiPanel = new BABYLON.GUI.StackPanel3D();
         this.guiPanel.margin = 0.02;
         this.guiManager.addControl(this.guiPanel);
-        this.guiPanel.linkToTransformNode(scene.activeCamera);
+        this.guiPanel.linkToTransformNode(guiPanel._node.parent);
         this.guiPanel.node.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
         this.guiPanel.position = new BABYLON.Vector3(-0.09, -0.15, 1);
         this.guiPanel.node.rotation = new BABYLON.Vector3(Math.PI / 3, 0, 0);
@@ -312,10 +312,8 @@ class PlaySpace {
 
         let points = spline.getPoints();
         for (let i = 0; i < points.length; i++) {
-            console.log("Placing rock at", points[i]);
             for (let j = 0; j < meshes.length; j++) {
                 let instance = meshes[j].createInstance(`playareabound${i}_part${j}`);
-                console.log("Scaling at", instance.scaling);
                 let mult = 1 / instance.scaling.x;
                 let trans = points[i].multiplyByFloats(mult, mult, mult);
                 instance.locallyTranslate(trans);

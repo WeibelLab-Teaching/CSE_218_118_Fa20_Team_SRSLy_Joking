@@ -15,7 +15,7 @@ function sendPose() {
 	// Sending 2 types of poses:
 	// 1. the world pose
 	// 2. the pose relative to the momentum.
-
+	// LOG("Sending Pose");
 	ws.send(JSON.stringify({
 		type:"POSE",
 		id: ApplicationState.id,
@@ -31,7 +31,7 @@ function sendPose() {
 		}
 	}))
 
-	setTimeout(sendPose, 10); // Change the delay to increase or decrease pose update frequency
+	setTimeout(sendPose, 30); // Change the delay to increase or decrease pose update frequency
 }
 
 function chooseAvatar(callback) {

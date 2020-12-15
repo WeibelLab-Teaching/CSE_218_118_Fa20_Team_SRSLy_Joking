@@ -1,31 +1,37 @@
 
-var ws
+var ws = {send: send} // so any other artifacts still send
 let temp_ids = []
 
-/**
- * Connects to the server. Callback is never run if an error occurs.
- * @param {function} callback Once verified by the server, run this callback and pass the websocket.
- */
-function EstablishWebsocketConnection(callback) {
-    let targetWsUri = window.location.origin.replace(/^http/, "ws") + ":8000" // "/cnxtn";
-    ws = new WebSocket(targetWsUri);
+setTimeout(() => {console.log("SOCKET", socket)}, 100)
 
-    ws.onopen = function() {
-        // console.log("[Websocket] Established connection");
-        ws.send(JSON.stringify({
-            "type": "SETUP",
-            "key": "SRSLy bro, just let me in. I got stuff I need to send."
-        }))
+function EstablishWebsocketConnection(callback) {
+
+    // Wait until socket is established
+    if (typeof(socket) === "undefined") {
+        setTimeout(function() {
+            setupSrslyListener(callback);
+        }, 100);
+        return;
     }
 
-    ws.onmessage = function (rawMessage) {
-        let msg = JSON.parse(rawMessage.data);
-        console.log("ECHO: " + msg);
+    // Implement logic
+    socket.on('srslyMessage', function(rawMessage) {
+        let msg;
+        try {
+            msg = JSON.parse(rawMessage);
+        }
+        catch {
+            console.error("Failed to parse message", rawMessage);
+            return;
+        }
+
         let type = msg.type.toUpperCase();
         let pcpair;
         let streamer;
 
         switch(type) {
+            case "PONG":
+                console.log("Pong-ed", msg);
             case "VERIFIED":
                 /* When the server confirms that the client has access to server 
                 passes an app state with an id in it. */
@@ -68,23 +74,24 @@ function EstablishWebsocketConnection(callback) {
                         console.log("[Websocket] created avatar streamer", streamer);
                     }
                     else {
-                        let positionOfStreamer = getStreamerPosition(streamer);
-                        streamer = new VideoStreamer(scene, p, pcpair, positionOfStreamer);
+                        streamer = new VideoStreamer(scene, p, pcpair, rtc_socket_id_streamerPosition);
                         console.log("[Websocket] created video streamer", streamer);
                     }
-                }
-                    
+                }                    
                 break;
             case "POSE":
                 /* User pose sent for updating avatars */
-                streamer = PCPair.get(null, null, null, msg.id).pair.streamer;
+                streamer = PCPair.get(null, null, null, msg.id).pair
+                if (streamer) { // verify pair exists
+                    streamer = streamer.streamer;
+                }
+                else {
+                    break;
+                }
+
                 if (streamer instanceof AvatarStreamer) {
                     streamer.setAvatarPose(msg);
                 }
-                else {
-                    console.error("Got pose for a non xr user");
-                }
-
                 // console.log(msg.id, "sent pose", msg.head);
                 break;
             case "REFRESH":
@@ -104,27 +111,41 @@ function EstablishWebsocketConnection(callback) {
                 console.error("[Websocket] Unknown message received from server of", type, "type. Contents:", msg);
                 break;
         }
-    }
+    });
 
-    ws.onerror = function(error) {
-        console.error("[Websocket] error", error);
-    }
+    socket.on('open', function() {
+        // send(JSON.stringify({
+        //     "type": "SETUP",
+        //     "key": "SRSLy bro, just let me in. I got stuff I need to send."
+        // }));
+    })
 
-    ws.onclose = function() {
-        console.warn("Disconnected from server. Reconnecting in 5 seconds...");
-        // setTimeout(function() {
-        //     // wait 5 seconds and reconnect
-        //     console.log("Reconnectiong...");
-        //     EstablishWebsocketConnection(callback);
+    socket.on('end', function() {
+        console.error("Disconnected from Socket");
+    });
 
-        // }, 5000);
-    }
+
+    send(JSON.stringify({
+        "type": "SETUP",
+        "key": "SRSLy bro, just let me in. I got stuff I need to send."
+    }));
+}
+
+
+
+function send(message) {
+    socket.emit("srslyMessage", message);
 }
 
 function pushAppState() {
     // Copy and serialize Application state
-    let state = JSON.parse(JSON.stringify(ApplicationState))
+    let state = {}
+    for (let key of Object.keys(ApplicationState)) {
+        if (key === "streamers") continue; // skip this one
+        state[key] = JSON.parse(JSON.stringify(ApplicationState[key]));
+    }
     // serialize streamers
+    state["streamers"]=[];
     for (let i in state.streamers) {
         state.streamers[i] = state.streamers[i].serialize();
     }
@@ -134,4 +155,15 @@ function pushAppState() {
         type: "AppState",
         content: state
     }));
+}
+
+function LOG() {
+    let args = Array.prototype.slice.call(arguments);
+    let data = args.join(" ");
+
+    send(JSON.stringify({
+        type: "LOG",
+        data: data
+    }))
+    console.log(data);
 }

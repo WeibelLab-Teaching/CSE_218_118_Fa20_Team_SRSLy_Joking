@@ -2,6 +2,9 @@
  * webrtc features.
  */
 
+let streams = document.getElementById("streams");
+let remoteAudios = document.getElementById("remoteAudios");
+
 if (location.href.substr(0, 5) !== 'https')
   location.href = 'https' + location.href.substr(4, location.href.length - 4)
 
@@ -48,9 +51,12 @@ function roomOpen() {
   control.className = ''
   reveal_nostyle(videoMedia)
 
-  
-  reveal(startRecordButton)
-  hide(stopRecordButton)
+  if (typeof(startRecordButton) !== "undefined"){
+    reveal(startRecordButton)
+  }
+  if (typeof(stopRecordButton) !== "undefined") {
+    hide(stopRecordButton)
+  }
 }
 
 function hide(elem) {

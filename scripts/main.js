@@ -12,6 +12,9 @@ var webRTCStreamer = undefined;
 
 var playSpace;
 
+var guiPanel;
+var guiManager;
+
 
 var recordButton;
 
@@ -58,19 +61,20 @@ var createDefaultEngine = function () {
 async function createScene(callback) {
 	// Setup scene
 	scene = new BABYLON.Scene(engine);
-	xr = await scene.createDefaultXRExperienceAsync();
+	// xrHelper = await scene.createDefaultXRExperienceAsync();
 	xrHelper = new BABYLON.VRExperienceHelper(scene);
 
 	// Get User objects
 	userCamera = scene.cameras.filter(c=>c.name==="deviceOrientationVRHelper")[0];
+	userCamera.minZ = 0.5;
 	console.log("User has", Object.keys(userCamera.inputs.attached), "input devices");
 	userLHand = undefined;
 	userRHand = undefined;
 
 	// Control VR state
-	xrHelper.setLaserColor(new BABYLON.Color3(1, 0, 0));
-	xrHelper.setGazeColor(new BABYLON.Color3(0, 1, 0));
-	xrHelper.enableInteractions();
+	// xrHelper.setLaserColor(new BABYLON.Color3(1, 0, 0));
+	// xrHelper.setGazeColor(new BABYLON.Color3(0, 1, 0));
+	// xrHelper.enableInteractions();
 	
 	xrHelper.onEnteringVR.add(() => {
 		// Look for controllers
@@ -93,6 +97,19 @@ async function createScene(callback) {
 			PCPair.announceIds();
 			pushAppState();
 		})
+
+
+		// Run AFTER entering VR
+		setTimeout(() => {
+			// Set camera
+			userCamera = scene.activeCamera; //scene.cameras.filter(c=>c.id==="VRDeviceOrientationVRHelper_L")[0];
+			guiPanel.linkToTransformNode(scene.activeCamera);
+			p.target = scene.activeCamera;
+			LOG(`Active Camera is now '${scene.activeCamera.name}'`);
+	
+			// Send user pose
+			sendPose();
+		}, 1000)
 	})
 
 	xrHelper.onExitingVR.add(() => {
@@ -104,6 +121,21 @@ async function createScene(callback) {
 		ApplicationState.xr = false;
 		PCPair.announceIds();
 		pushAppState();
+
+		// Run AFTER back as desktop
+		setTimeout(() => {
+			// Set camera
+			userCamera = scene.activeCamera;
+			guiPanel.linkToTransformNode(scene.activeCamera);
+			p.target = scene.activeCamera;
+			LOG(`Active Camera is now '${scene.activeCamera.name}'`);
+			for (let i=0; i<10; i++) {
+				setTimeout(() => {
+					LOG(`Active Camera '${scene.activeCamera.name}' is now at (${scene.activeCamera.position.x}, ${scene.activeCamera.position.y}, ${scene.activeCamera.position.z})`);
+				}, i*300)
+			}
+
+		}, 1000)
 	});
 
 	// Set Ground Plane
@@ -133,18 +165,18 @@ async function createScene(callback) {
 	skymat.mieCoefficient = 0.005;
 	skymat.mieDirectionalG = 0.9;
 
-	// skymat.cameraOffset.y = scene.activeCamera.globalPosition.y;
+	// skymat.cameraOffset.y = userCamera.globalPosition.y;
 
 	skybox.material = skymat
 	
 	// new BABYLON.CubeTexture("assets/skybox1/TropicalSunnyDay", scene);
 
 	// Set UI Control panel
-	var guiManager = new BABYLON.GUI.GUI3DManager(scene);
-	var guiPanel = new BABYLON.GUI.StackPanel3D();
+	guiManager = new BABYLON.GUI.GUI3DManager(scene);
+	guiPanel = new BABYLON.GUI.StackPanel3D();
 	guiPanel.margin = 0.02;
 	guiManager.addControl(guiPanel);
-	guiPanel.linkToTransformNode(scene.activeCamera);
+	guiPanel.linkToTransformNode(userCamera);
 	guiPanel.node.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
 	guiPanel.position.z = 1;
 	guiPanel.position.y = -0.25;
@@ -194,7 +226,7 @@ async function createScene(callback) {
 	playareaButton.content = playareaText;
 	// connect to meeting button
 	let connectText = new BABYLON.GUI.TextBlock();
-	connectText.text = "Join Meeting";
+	connectText.text = "Toggle Audio/Video";
 	connectText.color = "white";
 	connectText.fontSize = 30;
 	joinButton.content = connectText;
@@ -223,7 +255,7 @@ window.onload = function () {
 	createScene((scene) => {
 		// Render Loop
 		engine.runRenderLoop(function () {
-			if (scene && scene.activeCamera) {
+			if (scene && userCamera) {
 				scene.render();
 			}
 		});
@@ -236,48 +268,19 @@ window.onload = function () {
 
 
 		// Setup Momentum Tracking
-		p = new Momentum(scene.activeCamera);
+		p = new Momentum(userCamera);
 		scene.onBeforeRenderObservable.add(function () {
 			p.recordPose();
 		})
 
 		// Establish Websocket connection and load ApplicationState
 		EstablishWebsocketConnection((conn) => {
-			// Send user pose
-			sendPose();
 			// Connect to WebRTC
 			joinRoom(ApplicationState.id, ApplicationState.room);
 			// Load playspace
 			playSpace.loadFromAppState();
 		});
 	});
-}
-
-function removeStreamer(uri_or_video_elm) {
-	let target;
-
-	// Find the video element if given a URL
-	for (let streamer of ApplicationState.streamers) {
-		if (typeof (uri_or_video_elm) === "string") {
-			if (streamer.src.src === uri_or_video_elm) {
-				target = streamer;
-				break;
-			}
-		} else {
-			if (streamer.src === uri_or_video_elm) {
-				target = streamer;
-				break;
-			}
-		}
-	}
-
-	console.log("Removing", target);
-
-	// Remove from AppState
-	ApplicationState.streamers.splice(ApplicationState.streamers.indexOf(target), 1);
-
-	// Remove visuals
-	target.destructor();
 }
 
 function getStreamerPosition(video) {
@@ -307,10 +310,19 @@ function onFollowClicked() {
 }
 
 /* Should join a meeting */
+var producing = false;
 function onMeetingJoin(roomid=123) {
 	//TODO do something with roomid, for now it's just room #1.
-	console.log("Join Meeting Room #" + roomid);
-	
+	if (producing) {
+		rc.closeProducer(RoomClient.mediaType.audio);
+		rc.closeProducer(RoomClient.mediaType.video);
+	}
+	else {
+		console.log("Join Meeting Room #" + roomid);
+		rc.produce(RoomClient.mediaType.audio, audioSelect.value);
+		rc.produce(RoomClient.mediaType.video, videoSelect.value);
+	}
+	producing = !producing;
 }
 
 var recording = false;
