@@ -53,7 +53,7 @@ class Streamer {
 
         this.__dragHandle = BABYLON.MeshBuilder.CreatePlane(this.name, {width:.2, height:.2}, this.scene);
         this.__dragHandle.parent = this.mesh;
-        this.__dragHandle.locallyTranslate(new BABYLON.Vector3(0.4, -0.25, -0.2));
+        this.__dragHandle.locallyTranslate(new BABYLON.Vector3(0.4, -0.25, -0.05));
         this.__dragHandle.material = new BABYLON.StandardMaterial("DragHandleMaterial", this.scene);
         this.__dragHandle.material.diffuseTexture = new BABYLON.Texture("assets/axis.png", this.scene);
         this.__dragHandle.material.diffuseTexture.hasAlpha = true;
@@ -81,7 +81,7 @@ class Streamer {
         // Drag action
         this.__dragHandle.actionManager = new BABYLON.ActionManager(this.scene);
         this.dragAction = new BABYLON.ExecuteCodeAction(
-            BABYLON.ActionManager.OnPickDownTrigger, 
+            BABYLON.ActionManager.OnPickTrigger, 
             this.onDragStart.bind(this)
         )
         this.__dragHandle.actionManager.registerAction(this.dragAction);
@@ -149,20 +149,26 @@ class Streamer {
     }
 
     onDragStart() {
+        LOG("Drag Started");
         // this.follower.disable();
         this.__dragData = {
             "dragEndAction": new BABYLON.ExecuteCodeAction(
-                                BABYLON.ActionManager.OnPickUpTrigger, 
+                                BABYLON.ActionManager.OnPickTrigger, 
                                 this.onDragEnd.bind(this)
                             ),
             "plane": BABYLON.MeshBuilder.CreatePlane("constructionPlane", {height:10, width:10}, this.scene)
         }
 
         // Create Plane for construction
-        this.__dragData.plane.position = this.__dragHandle.position;
+        this.__dragData.plane.parent = null;
+        this.__dragData.plane.position = new BABYLON.Vector3(
+            this.__dragHandle.absolutePosition.x,
+            this.__dragHandle.absolutePosition.y,
+            this.__dragHandle.absolutePosition.z);
         this.__dragData.plane.lookAt(this.scene.activeCamera.position); // hides it very well
-        this.__dragData.plane.material = new BABYLON.StandardMaterial("constructionMaterial");
+        this.__dragData.plane.material = new BABYLON.StandardMaterial("constructionMaterial", this.scene);
         this.__dragData.plane.material.alpha = 0; // hide it completely
+        // this.__dragData.plane.material.backFaceCulling = false;
 
         // Create pointer drag and end click listeners
         this.__dragHandle.actionManager.unregisterAction(this.dragAction);
@@ -199,6 +205,7 @@ class Streamer {
                 pt.z - this.__dragHandle.position.z
             )
             this.mesh.position = new_pos;
+            // console.log("Updated pose to", new_pos.asArray(), "and plane to", this.__dragData.plane);
         }
     }
 

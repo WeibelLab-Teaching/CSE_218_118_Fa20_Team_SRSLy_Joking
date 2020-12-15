@@ -77,7 +77,6 @@ async function createScene(callback) {
 	// xrHelper.enableInteractions();
 	
 	xrHelper.onEnteringVR.add(() => {
-		alert("In VR Now");
 		// Look for controllers
 		xrHelper.onControllerMeshLoadedObservable.add(() => {
 			// Get controllers

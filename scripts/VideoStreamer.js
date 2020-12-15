@@ -90,7 +90,6 @@ class VideoStreamer extends Streamer {
                 let vids = elms.filter(e=>e.tagName==="VIDEO");
                 if (vids.length === 0) {
                         PCPair.tagUnpairedDOM();
-                        alert("No Vids");
                         LOG("No Vids");
                         return;
                 };
@@ -99,7 +98,6 @@ class VideoStreamer extends Streamer {
                 this.videoSrc = vids[0];
                 let texture = new BABYLON.VideoTexture(this.name, vids[0], scene);
                 this.videoPlane.material.diffuseTexture = texture;
-                alert("updated video.\n", this.videoSrc.id);
         }
 
         play() {
