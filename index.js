@@ -3,7 +3,7 @@ const fs = require('fs');
 const http = require('http');
 const https = require('https');
 
-const WSServer = require("./SRSLyClasses/WSServer.js");
+const WSServer = require("./scripts_serverside/WSServer.js");
 var AppState = WSServer.AppState;
 const WebSocket = require('ws');
 // const expressWs = require("express-ws");
@@ -113,7 +113,7 @@ httpsServer.listen(443, (err) => {
     }
     console.log(results);
     let ip = results[Object.keys(results)[0]][0]
-    console.log("Hosting Server on https://"+ip+":"+PORT.toString());
+    console.log("Hosting Server on https://"+ip);
 });
 
 
@@ -161,7 +161,7 @@ function convertFile(filename) {
 
 const io = require('socket.io')(httpsServer)
 const mediasoup = require('mediasoup')
-const config = require('./webrtc_server_scripts/config')
+const config = require('./scripts_serverside/config')
 
 
 // Begin worker methods
@@ -225,10 +225,10 @@ function getMediasoupWorker() {
 // Begin room list and initializations
 
 // Each Room is a meeting
-const Room = require('./webrtc_server_scripts/Room')
+const Room = require('./scripts_serverside/Room')
 
 // Each peer is a user
-const Peer = require('./webrtc_server_scripts/Peer');
+const Peer = require('./scripts_serverside/Peer');
 const { time } = require('console');
 const { execSync } = require('child_process');
 /**
