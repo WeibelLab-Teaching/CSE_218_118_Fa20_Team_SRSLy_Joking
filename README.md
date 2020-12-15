@@ -139,7 +139,7 @@ These WebRTC connections consist of various identified elements (producers, cons
 Team Name: SRSLy Joking
 
 Team Members
-- [Eric Siu](https://siueric0010.github.io/): Undergraduate student at UC San Diego
+- [Eric Siu](https://www.linkedin.com/in/esiu/): Undergraduate student at UC San Diego
 - [Naba Rizvi](https://nrizvi.github.io/): PhD student at UC San Diego
 - [Tommy Sharkey](https://www.tlsharkey.com/): PhD student at UC San Diego
 - [Stephen Liu](https://github.com/qixinliu): Undergraduate student at UC San Diego
