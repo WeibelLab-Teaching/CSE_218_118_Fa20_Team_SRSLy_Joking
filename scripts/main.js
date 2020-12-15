@@ -55,21 +55,23 @@ var createDefaultEngine = function () {
 async function createScene(callback) {
 	// Setup scene
 	scene = new BABYLON.Scene(engine);
-	xr = await scene.createDefaultXRExperienceAsync();
+	// xrHelper = await scene.createDefaultXRExperienceAsync();
 	xrHelper = new BABYLON.VRExperienceHelper(scene);
 
 	// Get User objects
 	userCamera = scene.cameras.filter(c=>c.name==="deviceOrientationVRHelper")[0];
+	userCamera.minZ = 0.5;
 	console.log("User has", Object.keys(userCamera.inputs.attached), "input devices");
 	userLHand = undefined;
 	userRHand = undefined;
 
 	// Control VR state
-	xrHelper.setLaserColor(new BABYLON.Color3(1, 0, 0));
-	xrHelper.setGazeColor(new BABYLON.Color3(0, 1, 0));
-	xrHelper.enableInteractions();
+	// xrHelper.setLaserColor(new BABYLON.Color3(1, 0, 0));
+	// xrHelper.setGazeColor(new BABYLON.Color3(0, 1, 0));
+	// xrHelper.enableInteractions();
 	
 	xrHelper.onEnteringVR.add(() => {
+		alert("In VR Now");
 		// Look for controllers
 		xrHelper.onControllerMeshLoadedObservable.add(() => {
 			// Get controllers
@@ -130,7 +132,7 @@ async function createScene(callback) {
 	skymat.mieCoefficient = 0.005;
 	skymat.mieDirectionalG = 0.9;
 
-	// skymat.cameraOffset.y = scene.activeCamera.globalPosition.y;
+	// skymat.cameraOffset.y = userCamera.globalPosition.y;
 
 	skybox.material = skymat
 	
@@ -141,7 +143,7 @@ async function createScene(callback) {
 	var guiPanel = new BABYLON.GUI.StackPanel3D();
 	guiPanel.margin = 0.02;
 	guiManager.addControl(guiPanel);
-	guiPanel.linkToTransformNode(scene.activeCamera);
+	guiPanel.linkToTransformNode(userCamera);
 	guiPanel.node.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
 	guiPanel.position.z = 1;
 	guiPanel.position.y = -0.25;
@@ -220,7 +222,7 @@ window.onload = function () {
 	createScene((scene) => {
 		// Render Loop
 		engine.runRenderLoop(function () {
-			if (scene && scene.activeCamera) {
+			if (scene && userCamera) {
 				scene.render();
 			}
 		});
@@ -233,7 +235,7 @@ window.onload = function () {
 
 
 		// Setup Momentum Tracking
-		p = new Momentum(scene.activeCamera);
+		p = new Momentum(userCamera);
 		scene.onBeforeRenderObservable.add(function () {
 			p.recordPose();
 		})

@@ -25,12 +25,25 @@ class VideoStreamer extends Streamer {
 
                 // Create a material from the video
                 let material = new BABYLON.StandardMaterial(this.name + "Mat", scene);
-                let texture = new BABYLON.VideoTexture(this.name, "/assets/samplevid.mp4", scene, true, false);
-                material.diffuseTexture = texture;
+                let elms = this.pcpair.DOMElements;
+                let vids = elms.filter(e=>e.tagName==="VIDEO");
+                if (vids.length > 0) {
+                        videoSrc = vids[0];
+                        let texture = new BABYLON.VideoTexture(this.name, vids[0], scene);
+                        material.diffuseTexture = texture;
+                }
                 video.material = material;
+                this.videoPlane = video;
 
                 // billboard
                 this.follower.billboard(true);
+
+                // Add update listeners
+                function f() {
+                        setTimeout(this.updateVideo.bind(this), 3000);
+                }
+                socket.on('newProducers', f.bind(this));
+                socket.on('newConsumers', f.bind(this));
         }
 
         serialize() {
@@ -60,10 +73,16 @@ class VideoStreamer extends Streamer {
         }
 
         updateVideo() {
-                let material = new BABYLON.StandardMaterial(this.name + "Mat", scene);
-                let texture = new BABYLON.VideoTexture(this.name, "/assets/samplevid.mp4", scene, true, false);
-                material.diffuseTexture = texture;
-                video.material = material;
+                console.log("Updating Video. pair", this.pcpair);
+                let elms = this.pcpair.DOMElements;
+                console.log(elms);
+                let vids = elms.filter(e=>e.tagName==="VIDEO");
+                if (vids.length === 0) return;
+
+                console.log("Updating video with", vids[0], this.mesh.getChildMeshes()[0].name);
+                this.videoSrc = vids[0];
+                let texture = new BABYLON.VideoTexture(this.name, vids[0], scene);
+                this.videoPlane.material.diffuseTexture = texture;
         }
 
         play() {

@@ -4,7 +4,7 @@ class Momentum {
      * Object for monitoring an object's movements.
      * You must implement the update loop. eg:
      * 
-     * p = new Momentum(scene.activeCamera);
+     * p = new Momentum(userCamera);
      * scene.onBeforeRenderObservable.add(function() {
      *      p.recordPose();
      * })

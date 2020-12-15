@@ -6,6 +6,9 @@ class AvatarStreamer extends Streamer {
 
         this.xr = true;
 
+        if (!avatarUri || avatarUri.length === 0) {
+            avatarUri = "/assets/avatars/avatar/dummy2.babylon";
+        }
         this.avatar = avatarUri.split(/(?<=\/)(?!.*\/.*.(glb|babylon|gltf))/).filter(sec => sec !== undefined);
         console.log("Attempting to import mesh", this.avatar);
 

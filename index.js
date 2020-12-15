@@ -5,11 +5,13 @@ const https = require('https');
 
 const WSServer = require("./SRSLyClasses/WSServer.js");
 var AppState = WSServer.AppState;
+const WebSocket = require('ws');
+// const expressWs = require("express-ws");
 
 var createError = require('http-errors');
 var path = require('path');
 var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+// var logger = require('morgan');
 
 const app = express();
 const { networkInterfaces } = require('os');
@@ -21,7 +23,7 @@ const PORT = 3000;
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
-app.use(logger('dev'));
+// app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
@@ -58,12 +60,13 @@ app.use("/babylon-vrm.js", express.static(__dirname+"/node_modules/babylon-vrm-l
         RUN SERVER
 =====================================
 */
+http.createServer(app).listen(80);
 var httpsServer = https.createServer({ // need https for webcam
     key: fs.readFileSync(__dirname+'/cert/tlsharkey.com.key'),
     cert: fs.readFileSync(__dirname+'/cert/tlsharkey.com.crt')
 }, app);
 
-httpsServer.listen(3000, (err) => {
+httpsServer.listen(443, (err) => {
     if (err) console.log("Error starting express server");
 
     // Get IP
@@ -86,6 +89,31 @@ httpsServer.listen(3000, (err) => {
     let ip = results[Object.keys(results)[0]][0]
     console.log("Hosting Server on https://"+ip+":"+PORT.toString());
 });
+
+
+
+// expressWs(app, httpsServer);
+// app.ws("/cnxtn", (ws, req) => {
+//     console.log("Websocket connected");
+//     WSServer.onClientConnect(ws);
+// })
+const wss = new WebSocket.Server({
+    // server: httpsServer,
+    port: 8000
+})
+wss.on('connection', function(ws) {
+    console.log("Websocket Connected");
+    WSServer.onClientConnect(ws);
+})
+
+
+
+
+/*
+================================================================================
+        WebRTC
+================================================================================
+*/
 
 /**
  * server mediasoup code for webrtc
@@ -187,6 +215,10 @@ let roomList = new Map()
 
 // on a connection request from the client (i.e. client goes to IP)
 io.on('connection', socket => {
+
+    socket.on("srslyMessage", (msg) => {
+        WSServer.onMessage(socket, msg);
+    })
 
     // If client wants to create a room.
     socket.on('createRoom', async ({
@@ -349,6 +381,8 @@ io.on('connection', socket => {
         
         // This removePeer will handle all the required actions to remove the user from the Room
         roomList.get(socket.room_id).removePeer(socket.id)
+
+        WSServer.onClose(socket);
     })
 
     // when a producer closes (i.e. someone stops sending audio/video)

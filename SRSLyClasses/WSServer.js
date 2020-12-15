@@ -1,8 +1,10 @@
-const WebSocket = require('ws');
+// const WebSocket = require('ws');
 const {v4: uuidv4} = require('uuid');
-const wss = new WebSocket.Server({
-    port:8000
-});
+// const ws = new WebSocket.Server({
+//     server: app,
+//     path: "/cnxtn",
+//     // port:8000
+// });
 
 
 const DEFAULT_CLIENT_STATE = {
@@ -46,58 +48,83 @@ const DEFAULT_CLIENT_STATE = {
 
 
 let connections = [];
-wss.on('connection', function(conn) {
-
-
-
-    conn.on('message', function(rawMessage) {
-        let msg = JSON.parse(rawMessage);
-        let type = msg.type.toUpperCase();
-
-        if (conn.SRSLy_Verified || type === "SETUP") {
-            let client_index = getClientIndex(conn.SRSLy_id);
-            let client_state = getClientState(conn.SRSLy_id);
-            switch(type) {
-
-                case "POSE":
-                    // update client's headpose
-                    AppState.clients[client_index].headpose = msg.world.head;
-                    bcast(rawMessage, conn);
-
-                    // TODO: accumulate poses from all clients and send as one packet
-                    break;
-                case "APPSTATE":
-                    AppState.clients[client_index] = msg.content;
-                    break;
-                case "SETUP":
-                    verifyClient(conn, msg);
-                    break;
-                case "BCAST":
-                case "BROADCAST":
-                case "RTC SOCKET ID":
-                default:
-                    bcast(rawMessage, conn);
-                    console.log("[WebSocket]", type, "message was forwarded to other clients");
-                    break;
-            }
-        }
-        else {
-            conn.close();
-            console.warn("[Websocket] No setup message send to validate socket", rawMessage);
-        }
+function onClientConnect(conn) {
+    conn.on('message', function(raw) {
+        onMessage(conn, raw);
     })
-
-
-
     conn.on('close', function() {
-        console.log("[Websocket] Connection with", conn.SRSLy_id, "closed");
-        bcast(JSON.stringify({
-            "type": "PEER DISCONNECT",
-            "id": conn.SRSLy_id
-        }));
-        connections.splice(connections.indexOf(conn), 1);
+        onClose(conn);
     })
-})
+}
+
+function onMessage(conn, rawMessage) {
+    let msg;
+    try {
+        msg = JSON.parse(rawMessage);
+    }
+    catch {
+        console.error("[WSServer] Failed to parse message as JSON.");
+        console.log(rawMessage);
+    }
+
+    let type = msg.type.toUpperCase();
+
+    if (conn.SRSLy_Verified || type === "SETUP") {
+        let client_index = getClientIndex(conn.SRSLy_id);
+        let client_state = getClientState(conn.SRSLy_id);
+        switch(type) {
+            case "PING":
+                console.log("ping-ed");
+                send(conn, JSON.stringify({
+                    type: "PONG",
+                    message: rawMessage
+                }));
+                break;
+            case "POSE":
+                // update client's headpose
+                AppState.clients[client_index].headpose = msg.world.head;
+                bcast(rawMessage, conn);
+
+                // TODO: accumulate poses from all clients and send as one packet
+                break;
+            case "APPSTATE":
+                AppState.clients[client_index] = msg.content;
+                break;
+            case "SETUP":
+                verifyClient(conn, msg);
+                break;
+            case "BCAST":
+            case "BROADCAST":
+            case "RTC SOCKET ID":
+            default:
+                bcast(rawMessage, conn);
+                console.log("[WebSocket]", type, "message was forwarded to other clients");
+                break;
+        }
+    }
+    else {
+        kick(conn);
+        // console.warn("[Websocket] No setup message send to validate socket", rawMessage);
+    }
+}
+
+function onClose(conn) {
+    console.log("[Websocket] Connection with", conn.SRSLy_id, "closed");
+    bcast(JSON.stringify({
+        "type": "PEER DISCONNECT",
+        "id": conn.SRSLy_id
+    }));
+    connections.splice(connections.indexOf(conn), 1);
+}
+
+function send(conn, message) {
+    if ('emit' in conn) {
+        conn.emit("srslyMessage", message);
+    }
+    else {
+        conn.send(message);
+    }
+}
 
 /**
  * Forwards a message from a sender to all of the other connected clients
@@ -107,7 +134,7 @@ wss.on('connection', function(conn) {
 function bcast(rawMessage, sender=null) {
     for (let conn of connections) {
         if (!sender || conn !== sender) {
-            conn.send(rawMessage);
+            send(conn, rawMessage);
         }
     }
 }
@@ -142,7 +169,7 @@ function verifyClient(conn, setupMessage) {
             conn["SRSLy_id"] = id;
             state.id = id;
             
-            conn.send(JSON.stringify({
+            send(conn, JSON.stringify({
                 type:"VERIFIED",
                 uuid: id,
                 state: state
@@ -157,8 +184,23 @@ function verifyClient(conn, setupMessage) {
     }
 
     // else
-    conn.close();
+    kick(conn);
     console.warn("[Websocket] Invalid Passkey");
+}
+
+function kick(conn) {
+    conn.SRSLy_Verified = false;
+    try {
+        conn.close();
+    }
+    catch {
+        try{
+            conn.disconnect();
+        }
+        catch {
+            console.log("Failed to kick")
+        }
+    }
 }
 
 function getClientState(id) {
@@ -171,4 +213,7 @@ function getClientIndex(id) {
 
 module.exports = {
     AppState: AppState,
+    onClientConnect: onClientConnect,
+    onMessage: onMessage,
+    onClose: onClose
 }
