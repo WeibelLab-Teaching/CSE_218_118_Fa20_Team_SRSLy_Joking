@@ -44,6 +44,17 @@ class VideoStreamer extends Streamer {
                 }
                 socket.on('newProducers', f.bind(this));
                 socket.on('newConsumers', f.bind(this));
+
+                // Allow click to update video
+                if (!this.videoPlane.actionManager) {
+                        this.videoPlane.actionManager = new BABYLON.ActionManager(scene);
+                }
+                let clickAction = new BABYLON.ExecuteCodeAction(
+                        BABYLON.ActionManager.OnPickTrigger, 
+                        this.updateVideo.bind(this)
+                )
+
+                this.videoPlane.actionManager.registerAction(clickAction);
         }
 
         serialize() {
@@ -77,7 +88,10 @@ class VideoStreamer extends Streamer {
                 let elms = this.pcpair.DOMElements;
                 console.log(elms);
                 let vids = elms.filter(e=>e.tagName==="VIDEO");
-                if (vids.length === 0) return;
+                if (vids.length === 0) {
+                        PCPair.tagUnpairedDOM();
+                        return;
+                };
 
                 console.log("Updating video with", vids[0], this.mesh.getChildMeshes()[0].name);
                 this.videoSrc = vids[0];

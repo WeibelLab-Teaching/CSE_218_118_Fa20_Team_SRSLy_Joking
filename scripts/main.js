@@ -193,7 +193,7 @@ async function createScene(callback) {
 	playareaButton.content = playareaText;
 	// connect to meeting button
 	let connectText = new BABYLON.GUI.TextBlock();
-	connectText.text = "Join Meeting";
+	connectText.text = "Toggle Audio/Video";
 	connectText.color = "white";
 	connectText.fontSize = 30;
 	joinButton.content = connectText;
@@ -297,10 +297,19 @@ function onFollowClicked() {
 }
 
 /* Should join a meeting */
+var producing = false;
 function onMeetingJoin(roomid=123) {
 	//TODO do something with roomid, for now it's just room #1.
-	console.log("Join Meeting Room #" + roomid);
-	
+	if (producing) {
+		rc.closeProducer(RoomClient.mediaType.audio);
+		rc.closeProducer(RoomClient.mediaType.video);
+	}
+	else {
+		console.log("Join Meeting Room #" + roomid);
+		rc.produce(RoomClient.mediaType.audio, audioSelect.value);
+		rc.produce(RoomClient.mediaType.video, videoSelect.value);
+	}
+	producing = !producing;
 }
 
 var recording = false;

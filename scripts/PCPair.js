@@ -71,6 +71,16 @@ class PCPair {
         return elms;
     }
 
+    get DOMVideos() {
+        let elms = this.DOMElements;
+        return elms.filter(e=>e.tagName==="VIDEO");
+    }
+
+    get DOMAudios() {
+        let elms = this.DOMElements;
+        return elms.filter(e=>e.tagName==="AUDIO");
+    }
+
     get streamer() {
         for (let streamer of Streamer.streamers) {
             if (streamer.pcpair === this) {
@@ -200,19 +210,73 @@ class PCPair {
             pair = new PCPair(pid, null, sid);
         }
 
+        setTimeout(() => {PCPair.tagDOM(sid)}, 150);
+    }
 
+    static clean() {
+        for(let i=PCPair.Pairs.length-1; i>=0; i--) {
+            if (!PCPair.Pairs[i].socket) {
+                let p = PCPair.Pairs.splice(i, 1)
+                p[0].destructor();
+            }
+        }
+    }
+
+    static tagDOM(sid) {
         // Tag Video and Audio Elements
-        setTimeout(() => {
-            let videoElms = document.getElementById("streams").getElementsByTagName("video");
-            let audioElms = document.getElementById("remoteAudios").getElementsByTagName("audio");
-            console.log("Creating Consumer Pairing", videoElms, audioElms);
-            if (videoElms.length > 0) {
-                videoElms[videoElms.length-1].setAttribute("webrtc_socket_id", sid);
+        let videoElms = document.getElementById("streams").getElementsByTagName("video");
+        let audioElms = document.getElementById("remoteAudios").getElementsByTagName("audio");
+        console.log("Creating Consumer Pairing", videoElms, audioElms);
+        if (videoElms.length > 0) {
+            videoElms[videoElms.length-1].setAttribute("webrtc_socket_id", sid);
+        }
+        if (audioElms.length > 0) {
+            audioElms[audioElms.length-1].setAttribute("webrtc_socket_id", sid);
+        }
+    }
+
+    static tagUnpairedDOM() {
+        PCPair.clean();
+        let videoElms = document.getElementById("streams").getElementsByTagName("video");
+        let audioElms = document.getElementById("remoteAudios").getElementsByTagName("audio");
+        let unmatched = [];
+        console.log(videoElms.length, "videos found for", PCPair.Pairs.length, "PCPairs");
+        
+        // ignore the videos that are already paired up
+        for (let p of PCPair.Pairs) {
+            let vid = p.DOMVideos
+            if (vid.length !== 0) {
+                let i = videoElms.indexOf(vid);
+                videoElms.splice(i, 1);
             }
-            if (audioElms.length > 0) {
-                audioElms[audioElms.length-1].setAttribute("webrtc_socket_id", sid);
+            else {
+                unmatched.push(p);
             }
-        }, 150)
+        }
+        console.log(videoElms, "unpaired videos with", unmatched.length, "pairs without matches", PCPair.Pairs.map(p=>p.DOMVideos));
+
+        let i=0;
+        for (let p of unmatched) {
+            try {
+                let m = videoElms[i]
+                i++;
+                console.log("Matched", m);
+                m.setAttribute("webrtc_socket_id", p.socket);
+                console.log("Assigned to", p);
+                p.consumers.push(m.id);
+            }
+            catch {
+                console.log("Ran out of matches");
+                break;
+            }
+        }
+
+        // Update streamers
+        for (let p of PCPair.Pairs) {
+            if (p instanceof VideoStreamer) {
+                p.streamer.updateVideo();
+            }
+        }
     }
 
     /**
