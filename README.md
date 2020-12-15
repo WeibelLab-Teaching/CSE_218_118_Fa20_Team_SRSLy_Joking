@@ -70,7 +70,7 @@ Non-XR users can join meetings using the desktop client. These users can also sh
 <img src="https://user-images.githubusercontent.com/23105064/102206107-f578c200-3e80-11eb-93b9-a68fec39ae68.png" width="900"/>
 
 ## Demo
-[![demo](https://user-images.githubusercontent.com/23105064/102267918-6c3cac00-3ecf-11eb-8a11-9fec6b8a5a95.png)](https://youtu.be/lbZkL-YcHFk)
+[![demo](https://user-images.githubusercontent.com/23105064/102267918-6c3cac00-3ecf-11eb-8a11-9fec6b8a5a95.png)](https://youtu.be/zY0DD-g9s0E)
 
 
 
