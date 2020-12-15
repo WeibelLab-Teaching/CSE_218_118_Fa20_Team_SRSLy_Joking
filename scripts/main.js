@@ -45,6 +45,9 @@ var ApplicationState = {
 // webRTCStreamer: the stream of other peers
 var webRTCStreamer = undefined;
 
+// the controller for stream positions
+var positionController = new StreamerPositionController();
+
 var createDefaultEngine = function () {
 	return new BABYLON.Engine(canvas, true, {
 		preserveDrawingBuffer: true,
@@ -275,6 +278,15 @@ function removeStreamer(uri_or_video_elm) {
 
 	// Remove visuals
 	target.destructor();
+}
+
+function getStreamerPosition(video) {
+	// return a random vector if it does not exist.
+	let returnPosition = positionController.getNewPosition(video);
+	if (returnPosition == null) {
+		returnPosition = new BABYLON.Vector3(Math.random(-.5, .5), 2, Math.random(0.5, 1));
+	}
+	return returnPosition;
 }
 
 /**
