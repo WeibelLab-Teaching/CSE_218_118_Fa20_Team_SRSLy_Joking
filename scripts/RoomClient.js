@@ -359,7 +359,12 @@ class RoomClient {
                     elem.srcObject.getTracks().forEach(function (track) {
                         track.stop()
                     })
-                    elem.parentNode.removeChild(elem)
+                    if(typeof removeStreamer !== "undefined") {
+                        removeStreamer(elem)
+                    }
+                    if (elem !== null && elem.parentNode !== null) {
+                        elem.parentNode.removeChild(elem)
+                    }
                 }
                 this.producers.delete(producer.id)
 
@@ -494,7 +499,12 @@ class RoomClient {
             elem.srcObject.getTracks().forEach(function (track) {
                 track.stop()
             })
-            elem.parentNode.removeChild(elem)
+            if(typeof removeStreamer !== "undefined") {
+                removeStreamer(elem)
+            }
+            if (elem !== null && elem.parentNode !== null) {
+                elem.parentNode.removeChild(elem)
+            }
         }
 
         switch (type) {
@@ -539,6 +549,13 @@ class RoomClient {
         elem.srcObject.getTracks().forEach(function (track) {
             track.stop()
         })
+
+        // If the element is a video, we want to destroy the streamer
+        if(elem.tagName == "VIDEO") {   
+            if(typeof removeStreamer !== "undefined") {
+                removeStreamer(elem)
+            }
+        }
         elem.parentNode.removeChild(elem)
 
         this.consumers.delete(consumer_id)
